@@ -94,6 +94,12 @@ pub trait FileSystem: Send + Sync {
     perm: &dyn Permissions,
   ) -> io::Result<()>;
 
+  fn symlink(
+    &self,
+    original: &Path,
+    link: &Path,
+  ) -> io::Result<()>;
+
   fn symlink_metadata(
     &self,
     path: &Path,

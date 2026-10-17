@@ -148,6 +148,28 @@ impl FileSystem for OsFileSystem {
     fs::set_permissions(path, fs::Permissions::from_mode(perm.mode()))
   }
 
+  #[cfg(unix)]
+  fn symlink(
+    &self,
+    original: &Path,
+    link: &Path,
+  ) -> io::Result<()> {
+    std::os::unix::fs::symlink(original, link)
+  }
+
+  #[cfg(windows)]
+  fn symlink(
+    &self,
+    original: &Path,
+    link: &Path,
+  ) -> io::Result<()> {
+    if fs::metadata(original).map(|m| m.is_dir()).unwrap_or(false) {
+      std::os::windows::fs::symlink_dir(original, link)
+    } else {
+      std::os::windows::fs::symlink_file(original, link)
+    }
+  }
+
   fn symlink_metadata(
     &self,
     path: &Path,

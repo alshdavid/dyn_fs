@@ -207,6 +207,14 @@ impl FileSystem for MemoryFileSystem {
     todo!()
   }
 
+  fn symlink(
+    &self,
+    _original: &Path,
+    _link: &Path,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
   fn symlink_metadata(
     &self,
     _path: &Path,
