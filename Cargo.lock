@@ -10,6 +10,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "basic_sync_memory"
+version = "0.0.1"
+dependencies = [
+ "dyn_fs",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

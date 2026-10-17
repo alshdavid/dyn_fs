@@ -4,6 +4,7 @@ resolver = "2"
 members = [
   "./crates/*",
   "./examples/basic_sync",
+  "./examples/basic_sync_memory",
 ]
 
 [profile.release]
