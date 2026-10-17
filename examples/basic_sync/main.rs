@@ -5,7 +5,7 @@ use dyn_fs::FileSystem;
 use dyn_fs::os::OsFileSystem;
 
 fn main() -> std::io::Result<()> {
-  let os_fs = OsFileSystem::default();
+  let os_fs = OsFileSystem;
   // TODO
   // let mem_fs = MemoryFileSystem::default();
 
@@ -21,7 +21,7 @@ fn use_dyn_fs(fs: &dyn FileSystem) -> std::io::Result<()> {
   let path = exe_path.parent().unwrap();
   let file = path.join("basic_sync.txt");
   println!("Dir Target:   {:?}", path);
-  println!("Dir Exists:   {:?}", fs::exists(&path)?);
+  println!("Dir Exists:   {:?}", fs::exists(path)?);
   println!("File Target:  {:?}", file);
   println!("File Exists:  {:?}", fs::exists(&file)?);
 

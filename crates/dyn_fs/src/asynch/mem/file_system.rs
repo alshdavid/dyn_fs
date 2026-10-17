@@ -236,10 +236,10 @@ impl AsyncFileSystem for AsyncMemoryFileSystem {
           if options.get_create_new() {
             return Err(already_exists());
           }
-          if options.get_truncate() {
-            if let Some(data) = data {
-              data.write().map_err(|_| poisoned())?.clear();
-            }
+          if options.get_truncate()
+            && let Some(data) = data
+          {
+            data.write().map_err(|_| poisoned())?.clear();
           }
         }
         None => {
@@ -454,10 +454,10 @@ impl AsyncFileSystem for AsyncMemoryFileSystem {
       create_directories(&mut nodes, &path, builder.get_recursive())?;
 
       #[cfg(unix)]
-      if let Some(mode) = builder.get_mode() {
-        if let Some(node) = nodes.get_mut(&path) {
-          node.permissions = Permissions::from_mode(mode);
-        }
+      if let Some(mode) = builder.get_mode()
+        && let Some(node) = nodes.get_mut(&path)
+      {
+        node.permissions = Permissions::from_mode(mode);
       }
 
       Ok(())
