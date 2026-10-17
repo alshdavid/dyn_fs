@@ -1,4 +1,3 @@
-use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -6,6 +5,7 @@ use crate::sync::FileSystem;
 
 pub trait FileSystemExt {
   fn find_ancestor_file<P: AsRef<Path>, S: AsRef<Path>>(
+    &self,
     start_dir: P,
     file_name: S,
   ) -> std::io::Result<Vec<PathBuf>>;
@@ -13,6 +13,7 @@ pub trait FileSystemExt {
 
 impl<F: FileSystem> FileSystemExt for F {
   fn find_ancestor_file<P: AsRef<Path>, S: AsRef<Path>>(
+    &self,
     start_dir: P,
     file_name: S,
   ) -> std::io::Result<Vec<PathBuf>> {
@@ -23,7 +24,7 @@ impl<F: FileSystem> FileSystemExt for F {
     loop {
       let possible = current.join(file_name);
 
-      if fs::exists(&possible)? {
+      if self.try_exists(&possible)? {
         found.push(possible)
       }
 
