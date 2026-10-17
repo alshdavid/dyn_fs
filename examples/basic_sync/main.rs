@@ -1,14 +1,13 @@
-
 use std::fs;
 
-use dyn_fs::os::OsFileSystem;
 // use dyn_fs::mem::MemoryFileSystem;
 use dyn_fs::FileSystem;
+use dyn_fs::os::OsFileSystem;
 
 fn main() -> std::io::Result<()> {
   let os_fs = OsFileSystem::default();
   // TODO
-  // let mem_fs = MemoryFileSystem::default(); 
+  // let mem_fs = MemoryFileSystem::default();
 
   use_dyn_fs(&os_fs)?;
   // TODO

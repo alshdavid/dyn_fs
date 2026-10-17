@@ -120,7 +120,7 @@ pub trait Metadata {
 
 pub trait Permissions {
   fn readonly(&self) -> bool;
-  
+
   fn set_readonly(
     &mut self,
     readonly: bool,

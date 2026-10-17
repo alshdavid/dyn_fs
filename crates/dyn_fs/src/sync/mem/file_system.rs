@@ -27,18 +27,14 @@ pub struct MemoryFileSystem {
 }
 
 impl MemoryFileSystem {
-  fn files_write<'a>(
-    &'a self
-  ) -> io::Result<RwLockWriteGuard<'a, HashMap<PathBuf, Entry>>> {
+  fn files_write<'a>(&'a self) -> io::Result<RwLockWriteGuard<'a, HashMap<PathBuf, Entry>>> {
     let Ok(files) = self.files.write() else {
       return Err(io::Error::other("Unable to unlock mutex"));
     };
     Ok(files)
   }
 
-  fn files_read<'a>(
-    &'a self
-  ) -> io::Result<RwLockReadGuard<'a, HashMap<PathBuf, Entry>>> {
+  fn files_read<'a>(&'a self) -> io::Result<RwLockReadGuard<'a, HashMap<PathBuf, Entry>>> {
     let Ok(files) = self.files.read() else {
       return Err(io::Error::other("Unable to unlock mutex"));
     };
@@ -109,10 +105,7 @@ impl FileSystem for MemoryFileSystem {
     let path = path.normalize();
 
     let mut files = self.files_write()?;
-    files.insert(
-      path.clone(),
-      Entry::File(contents.to_vec()),
-    );
+    files.insert(path.clone(), Entry::File(contents.to_vec()));
 
     let mut dir = path.parent();
     while let Some(path) = dir {
