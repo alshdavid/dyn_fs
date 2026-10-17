@@ -1,18 +1,4 @@
-use std::fs;
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
-
-use crate::asynch::file_system::AsyncPermissions;
-
-impl From<fs::Permissions> for AsyncPermissions {
-  fn from(value: fs::Permissions) -> Self {
-    #[cfg(unix)]
-    {
-      AsyncPermissions::from_mode(value.mode())
-    }
-    #[cfg(not(unix))]
-    {
-      AsyncPermissions::from_readonly(value.readonly())
-    }
-  }
-}
+// Permissions are shared with the synchronous `dyn_fs::sync` module, so the
+// `From<std::fs::Permissions>` conversion lives there
+// (`crate::sync::os::permissions`). This module is intentionally empty and is
+// not declared by `super`.

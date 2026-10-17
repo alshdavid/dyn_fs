@@ -18,9 +18,9 @@ use std::path::PathBuf;
 use std::pin::Pin;
 use std::time::SystemTime;
 
-pub use tokio::io::AsyncRead;
-pub use tokio::io::AsyncSeek;
-pub use tokio::io::AsyncWrite;
+pub use ::tokio::io::AsyncRead;
+pub use ::tokio::io::AsyncSeek;
+pub use ::tokio::io::AsyncWrite;
 
 pub use crate::sync::file_system::DirBuilder;
 pub use crate::sync::file_system::FileTimes;

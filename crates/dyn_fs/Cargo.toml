@@ -10,7 +10,7 @@ license = "MIT"
 [lib]
 
 [features]
-default = []
+default = ["memory", "async"]
 # Enables the in-memory `FileSystem` implementation (`dyn_fs::mem`).
 memory = ["dep:normalize-path"]
 # Enables the asynchronous API (`dyn_fs::asynch`). Combine with `memory` to

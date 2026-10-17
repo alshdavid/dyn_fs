@@ -1,20 +1,20 @@
 use std::fs;
 use std::time::SystemTime;
 
-use super::AsyncOsFileType;
+use super::TokioFileType;
 use crate::asynch::file_system::AsyncFileType;
 use crate::asynch::file_system::AsyncMetadata;
-use crate::asynch::file_system::AsyncPermissions;
+use crate::asynch::file_system::Permissions;
 
-pub struct AsyncOsMetadata(fs::Metadata);
+pub struct TokioMetadata(fs::Metadata);
 
-impl From<fs::Metadata> for AsyncOsMetadata {
+impl From<fs::Metadata> for TokioMetadata {
   fn from(value: fs::Metadata) -> Self {
     Self(value)
   }
 }
 
-impl AsyncMetadata for AsyncOsMetadata {
+impl AsyncMetadata for TokioMetadata {
   fn accessed(&self) -> std::io::Result<SystemTime> {
     self.0.accessed()
   }
@@ -25,7 +25,7 @@ impl AsyncMetadata for AsyncOsMetadata {
 
   fn file_type(&self) -> Box<dyn AsyncFileType + Send + Sync> {
     let file_type = self.0.file_type();
-    Box::new(AsyncOsFileType::from(file_type))
+    Box::new(TokioFileType::from(file_type))
   }
 
   fn is_dir(&self) -> bool {
@@ -44,9 +44,9 @@ impl AsyncMetadata for AsyncOsMetadata {
     self.0.modified()
   }
 
-  fn permissions(&self) -> AsyncPermissions {
+  fn permissions(&self) -> Permissions {
     let permissions = self.0.permissions();
-    AsyncPermissions::from(permissions)
+    Permissions::from(permissions)
   }
 
   fn len(&self) -> u64 {
