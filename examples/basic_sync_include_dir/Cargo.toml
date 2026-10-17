@@ -8,5 +8,5 @@ name = "basic_sync_include_dir"
 path = "./main.rs"
 
 [dependencies]
-dyn_fs = { path = "../../crates/dyn_fs" }
+dyn_fs = { path = "../../crates/dyn_fs", features = ["include_dir"] }
 include_dir = "0.7.4"

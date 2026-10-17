@@ -6,13 +6,19 @@ Useful for substituting the FileSystem in tests and benchmarks
 
 ## Features
 
-- `memory` — the in-memory `FileSystem` implementation at `dyn_fs::mem` (opt-in).
-- `async` — the asynchronous API at `dyn_fs::asynch` (opt-in).
+No features are enabled by default; opt in to the ones you need:
 
-Enable them (the in-memory backend pulls in the `normalize-path` dependency):
+- `memory` — the in-memory `FileSystem` implementation at `dyn_fs::mem`.
+- `async` — the asynchronous API at `dyn_fs::asynch`.
+- `include_dir` — the read-only backend backed by assets embedded with
+  [`include_dir`](https://crates.io/crates/include_dir) at `dyn_fs::include_dir`.
+
+Enable them (the `memory` backend pulls in the `normalize-path` dependency, the
+`async` backend pulls in `tokio`, and the `include_dir` backend pulls in the
+`include_dir` dependency):
 
 ```toml
-dyn_fs = { version = "...", features = ["memory", "async"] }
+dyn_fs = { version = "...", features = ["memory", "async", "include_dir"] }
 ```
 
 ```rust

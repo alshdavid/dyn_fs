@@ -8,6 +8,6 @@ name = "basic_async_include_dir"
 path = "./main.rs"
 
 [dependencies]
-dyn_fs = { path = "../../crates/dyn_fs", features = ["async"] }
+dyn_fs = { path = "../../crates/dyn_fs", features = ["async", "include_dir"] }
 include_dir = "0.7.4"
 tokio = { version = "1", features = ["full"] }

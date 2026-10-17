@@ -8,5 +8,5 @@ name = "basic_async_tokio"
 path = "./main.rs"
 
 [dependencies]
-dyn_fs = { path = "../../crates/dyn_fs" }
+dyn_fs = { path = "../../crates/dyn_fs", features = ["async"] }
 tokio = { version = "1", features = ["full"] }
