@@ -3,7 +3,7 @@
 //! This module contains traits that map the functionality of
 //! the Rust standard library FileSystem to trait methods
 
-use std::fs;
+use std::ffi::OsString;
 use std::io;
 use std::path::Path;
 use std::path::PathBuf;
@@ -60,7 +60,7 @@ pub trait FileSystem: Send + Sync {
   fn read_dir(
     &self,
     path: &Path,
-  ) -> io::Result<fs::ReadDir>;
+  ) -> io::Result<Box<dyn ReadDir>>;
 
   fn read_to_string(
     &self,
@@ -141,5 +141,28 @@ pub trait FileType {
   fn is_file(&self) -> bool;
   fn is_symlink(&self) -> bool;
 }
+
+/// An entry within a directory, as returned by [`FileSystem::read_dir`].
+pub trait DirEntry {
+  /// Full path to this entry.
+  fn path(&self) -> PathBuf;
+
+  /// The final component of the path of this entry.
+  fn file_name(&self) -> OsString;
+
+  /// The file type of this entry, without following symlinks.
+  fn file_type(&self) -> io::Result<Box<dyn FileType>>;
+
+  /// Metadata for this entry, without following symlinks.
+  fn metadata(&self) -> io::Result<Box<dyn Metadata>>;
+}
+
+/// An abstract iterator over the entries of a directory.
+///
+/// This is implemented by any iterator yielding boxed [`DirEntry`] values,
+/// allowing backends to return their own concrete iterators.
+pub trait ReadDir: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
+
+impl<T> ReadDir for T where T: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
 
 pub trait File: io::Read + io::Write {}

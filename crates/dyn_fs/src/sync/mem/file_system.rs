@@ -14,6 +14,7 @@ use super::MemoryMetadata;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
 use crate::file_system::Metadata;
+use crate::file_system::ReadDir;
 
 #[derive(Debug)]
 enum Entry {
@@ -163,7 +164,7 @@ impl FileSystem for MemoryFileSystem {
   fn read_dir(
     &self,
     _path: &Path,
-  ) -> io::Result<std::fs::ReadDir> {
+  ) -> io::Result<Box<dyn ReadDir>> {
     todo!()
   }
 

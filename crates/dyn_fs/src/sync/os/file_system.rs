@@ -6,10 +6,12 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use super::OsMetadata;
+use super::OsReadDir;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
 use crate::file_system::Metadata;
 use crate::file_system::Permissions;
+use crate::file_system::ReadDir;
 
 #[derive(Default, Debug, Clone)]
 pub struct OsFileSystem;
@@ -84,8 +86,9 @@ impl FileSystem for OsFileSystem {
   fn read_dir(
     &self,
     path: &Path,
-  ) -> io::Result<std::fs::ReadDir> {
-    fs::read_dir(path)
+  ) -> io::Result<Box<dyn ReadDir>> {
+    let read_dir = fs::read_dir(path)?;
+    Ok(Box::new(OsReadDir::from(read_dir)))
   }
 
   fn read_to_string(
