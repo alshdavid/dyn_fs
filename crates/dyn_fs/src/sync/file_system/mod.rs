@@ -151,6 +151,10 @@ pub trait FileSystem: Send + Sync {
 }
 
 pub trait Metadata {
+  // TODO(deferred): expose Unix extended metadata (`dev`, `ino`, `uid`, `gid`,
+  // `nlink`, `blocks`) and the additional file-kind predicates
+  // (`is_block_device`, `is_char_device`, `is_fifo`, `is_socket`), backed by
+  // `std::os::unix::fs::MetadataExt`/`FileTypeExt` on Unix.
   fn accessed(&self) -> io::Result<SystemTime>;
   fn created(&self) -> io::Result<SystemTime>;
   fn file_type(&self) -> Box<dyn FileType + Send + Sync>;
@@ -448,6 +452,8 @@ impl DirBuilder {
 }
 
 pub trait FileType {
+  // TODO(deferred): add `is_block_device`, `is_char_device`, `is_fifo` and
+  // `is_socket`, backed by `std::os::unix::fs::FileTypeExt` on Unix.
   fn is_dir(&self) -> bool;
   fn is_file(&self) -> bool;
   fn is_symlink(&self) -> bool;
