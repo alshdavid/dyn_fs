@@ -8,4 +8,4 @@ name = "basic_sync"
 path = "./main.rs"
 
 [dependencies]
-dyn_fs = { path = "../../crates/dyn_fs" }
+dyn_fs = { path = "../../crates/dyn_fs", features = ["memory"] }

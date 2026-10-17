@@ -4,6 +4,16 @@ This crate offers a trait that looks exactly like the `std::fs` interface and su
 
 Useful for substituting the FileSystem in tests and benchmarks
 
+## Features
+
+- `memory` — the in-memory `FileSystem` implementation at `dyn_fs::mem` (opt-in).
+
+Enable it to use the in-memory file system (and pull in the `normalize-path` dependency):
+
+```toml
+dyn_fs = { version = "...", features = ["memory"] }
+```
+
 ```rust
 use dyn_fs::FileSystem;
 use dyn_fs::os::OsFileSystem;

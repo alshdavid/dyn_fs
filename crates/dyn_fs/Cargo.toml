@@ -9,5 +9,10 @@ license = "MIT"
 
 [lib]
 
+[features]
+default = []
+# Enables the in-memory `FileSystem` implementation (`dyn_fs::mem`).
+memory = ["dep:normalize-path"]
+
 [dependencies]
-normalize-path = "^0.2"
+normalize-path = { version = "^0.2", optional = true }

@@ -1,4 +1,5 @@
 pub mod file_system;
+#[cfg(feature = "memory")]
 pub mod mem;
 pub mod os;
 
