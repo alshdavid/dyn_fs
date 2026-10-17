@@ -7,11 +7,12 @@ Useful for substituting the FileSystem in tests and benchmarks
 ## Features
 
 - `memory` — the in-memory `FileSystem` implementation at `dyn_fs::mem` (opt-in).
+- `async` — the asynchronous API at `dyn_fs::asynch` (opt-in).
 
-Enable it to use the in-memory file system (and pull in the `normalize-path` dependency):
+Enable them (the in-memory backend pulls in the `normalize-path` dependency):
 
 ```toml
-dyn_fs = { version = "...", features = ["memory"] }
+dyn_fs = { version = "...", features = ["memory", "async"] }
 ```
 
 ```rust
