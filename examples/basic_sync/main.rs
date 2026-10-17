@@ -5,13 +5,13 @@ use dyn_fs::FileSystem;
 use dyn_fs::os::OsFileSystem;
 
 fn main() -> std::io::Result<()> {
-  let os_fs = OsFileSystem;
+  let os_fs = OsFileSystem::new();
   // TODO
-  // let mem_fs = MemoryFileSystem::default();
+  // let mem_fs = MemoryFileSystem::new();
 
-  use_dyn_fs(&os_fs)?;
+  use_dyn_fs(os_fs.as_ref())?;
   // TODO
-  // use_dyn_fs(&mem_fs)?;
+  // use_dyn_fs(mem_fs.as_ref())?;
 
   Ok(())
 }

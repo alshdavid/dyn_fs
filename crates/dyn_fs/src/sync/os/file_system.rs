@@ -6,6 +6,7 @@ use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use super::OsMetadata;
 use super::OsReadDir;
@@ -20,6 +21,15 @@ use crate::file_system::ReadDir;
 
 #[derive(Default, Debug, Clone)]
 pub struct OsFileSystem;
+
+impl OsFileSystem {
+  /// Creates a file system backed by the real operating system, returned as a
+  /// shared [`Arc`] trait object.
+  #[allow(clippy::new_ret_no_self)]
+  pub fn new() -> Arc<dyn FileSystem> {
+    Arc::new(Self)
+  }
+}
 
 impl FileSystem for OsFileSystem {
   fn open_with(

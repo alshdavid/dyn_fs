@@ -3,6 +3,7 @@ use std::io::Cursor;
 use std::path::Component;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use ::include_dir::Dir;
 use ::include_dir::DirEntry as EmbeddedDirEntry;
@@ -47,16 +48,18 @@ pub struct AsyncIncludeDirFileSystem {
 }
 
 impl AsyncIncludeDirFileSystem {
-  /// Creates a file system for the given embedded directory.
+  /// Creates a file system for the given embedded directory, returned as a
+  /// shared [`Arc`] trait object.
   ///
   /// Paths are resolved relative to `root`. Because `include_dir` records the
   /// paths of entries relative to the directory passed to
   /// [`include_dir!`](::include_dir::include_dir), passing a sub-directory
   /// (for example `ASSETS.get_dir("assets").unwrap().clone()`) exposes that
   /// sub-directory's contents at the file system root.
-  pub fn new(root: Dir<'static>) -> Self {
+  #[allow(clippy::new_ret_no_self)]
+  pub fn new(root: Dir<'static>) -> Arc<dyn AsyncFileSystem> {
     let prefix = root.path().to_path_buf();
-    Self { root, prefix }
+    Arc::new(Self { root, prefix })
   }
 
   /// Returns the embedded root directory.

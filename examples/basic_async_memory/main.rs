@@ -14,6 +14,7 @@
 use std::io;
 use std::io::SeekFrom;
 use std::path::Path;
+use std::sync::Arc;
 
 use dyn_fs::OpenOptions;
 use dyn_fs::asynch::AsyncFileSystem;
@@ -24,16 +25,16 @@ use tokio::io::AsyncWriteExt;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
-  let fs = AsyncMemoryFileSystem::default();
+  let fs = AsyncMemoryFileSystem::new();
 
-  directories(&fs).await?;
-  write_and_read(&fs).await?;
-  handle_io(&fs).await?;
-  listing(&fs).await?;
-  copy_rename_and_symlink(&fs).await?;
-  metadata(&fs).await?;
+  directories(fs.as_ref()).await?;
+  write_and_read(fs.as_ref()).await?;
+  handle_io(fs.as_ref()).await?;
+  listing(fs.as_ref()).await?;
+  copy_rename_and_symlink(fs.as_ref()).await?;
+  metadata(fs.as_ref()).await?;
   shared_state(&fs).await?;
-  cleanup(&fs).await?;
+  cleanup(fs.as_ref()).await?;
 
   println!();
   println!("done");
@@ -41,7 +42,7 @@ async fn main() -> io::Result<()> {
   Ok(())
 }
 
-async fn directories<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn directories(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- directories --");
 
   fs.create_dir(Path::new("/notes")).await?;
@@ -59,7 +60,7 @@ async fn directories<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn write_and_read<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn write_and_read(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- write / read --");
 
   let file = Path::new("/notes/hello.txt");
@@ -71,7 +72,7 @@ async fn write_and_read<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn handle_io<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn handle_io(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- handle io --");
 
   let file = Path::new("/notes/hello.txt");
@@ -103,7 +104,7 @@ async fn handle_io<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn listing<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn listing(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- read_dir --");
 
   let mut read_dir = fs.read_dir(Path::new("/notes")).await?;
@@ -120,7 +121,7 @@ async fn listing<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn copy_rename_and_symlink<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn copy_rename_and_symlink(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- copy / rename / symlink --");
 
   let original = Path::new("/notes/hello.txt");
@@ -146,7 +147,7 @@ async fn copy_rename_and_symlink<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn metadata<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn metadata(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- metadata --");
 
   let file = Path::new("/notes/renamed.txt");
@@ -161,10 +162,11 @@ async fn metadata<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn shared_state(fs: &AsyncMemoryFileSystem) -> io::Result<()> {
+/// Clones of the shared handle point at the same underlying file system.
+async fn shared_state(fs: &Arc<dyn AsyncFileSystem>) -> io::Result<()> {
   println!("-- shared state --");
 
-  let clone = fs.clone();
+  let clone = Arc::clone(fs);
   clone
     .write(Path::new("/shared.txt"), b"written through clone")
     .await?;
@@ -177,7 +179,7 @@ async fn shared_state(fs: &AsyncMemoryFileSystem) -> io::Result<()> {
   Ok(())
 }
 
-async fn cleanup<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn cleanup(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- remove --");
 
   fs.create_dir(Path::new("/empty")).await?;

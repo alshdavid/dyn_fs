@@ -32,11 +32,11 @@ fn read_file(fs: &dyn FileSystem) {
 }
 
 fn main() {
-  let os_fs = OsFileSystem::default();
-  let mem_fs = MemoryFileSystem::default();
+  let os_fs = OsFileSystem::new();
+  let mem_fs = MemoryFileSystem::new();
 
-  read_file(&os_fs);
-  read_file(&mem_fs);
+  read_file(os_fs.as_ref());
+  read_file(mem_fs.as_ref());
 }
 ```
 

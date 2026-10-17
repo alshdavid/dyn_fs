@@ -25,12 +25,12 @@ fn main() -> io::Result<()> {
   // `Dir` is not `Copy`, so clone the (shallow) handle out of the static.
   let fs = IncludeDirFileSystem::new(ASSETS.clone());
 
-  read(&fs)?;
-  open(&fs)?;
-  metadata(&fs)?;
-  listing(&fs)?;
-  existence(&fs)?;
-  mutations_are_unsupported(&fs)?;
+  read(fs.as_ref())?;
+  open(fs.as_ref())?;
+  metadata(fs.as_ref())?;
+  listing(fs.as_ref())?;
+  existence(fs.as_ref())?;
+  mutations_are_unsupported(fs.as_ref())?;
 
   println!();
   println!("done");

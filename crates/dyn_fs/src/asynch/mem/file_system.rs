@@ -37,6 +37,13 @@ pub struct AsyncMemoryFileSystem {
 }
 
 impl AsyncMemoryFileSystem {
+  /// Creates an empty in-memory file system, returned as a shared [`Arc`] trait
+  /// object.
+  #[allow(clippy::new_ret_no_self)]
+  pub fn new() -> Arc<dyn AsyncFileSystem> {
+    Arc::new(Self::default())
+  }
+
   fn files_write<'a>(&'a self) -> io::Result<RwLockWriteGuard<'a, AsyncNodes>> {
     let Ok(files) = self.files.write() else {
       return Err(io::Error::other("memory file system lock poisoned"));

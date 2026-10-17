@@ -11,7 +11,7 @@ pub trait FileSystemExt {
   ) -> std::io::Result<Vec<PathBuf>>;
 }
 
-impl<F: FileSystem> FileSystemExt for F {
+impl<F: FileSystem + ?Sized> FileSystemExt for F {
   fn find_ancestor_file<P: AsRef<Path>, S: AsRef<Path>>(
     &self,
     start_dir: P,

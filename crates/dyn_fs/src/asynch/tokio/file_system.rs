@@ -7,6 +7,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::task::Context;
 use std::task::Poll;
 
@@ -28,6 +29,15 @@ use crate::asynch::file_system::Permissions;
 /// An [`AsyncFileSystem`] backed by `tokio`'s asynchronous filesystem API.
 #[derive(Default, Debug, Clone)]
 pub struct TokioFileSystem;
+
+impl TokioFileSystem {
+  /// Creates a file system backed by `tokio`'s asynchronous filesystem API,
+  /// returned as a shared [`Arc`] trait object.
+  #[allow(clippy::new_ret_no_self)]
+  pub fn new() -> Arc<dyn AsyncFileSystem> {
+    Arc::new(Self)
+  }
+}
 
 impl AsyncFileSystem for TokioFileSystem {
   fn open_with<'a>(

@@ -29,18 +29,18 @@ async fn main() -> io::Result<()> {
   // Work inside a scratch directory under the system temp dir so we do not
   // touch the user's files.
   let root = std::env::temp_dir().join("dyn_fs_basic_async_tokio");
-  let fs = TokioFileSystem;
+  let fs = TokioFileSystem::new();
 
   let _ = fs.remove_dir_all(&root).await;
 
-  let result = run(&fs, &root).await;
+  let result = run(fs.as_ref(), &root).await;
 
   let _ = fs.remove_dir_all(&root).await;
   result
 }
 
-async fn run<F: AsyncFileSystem>(
-  fs: &F,
+async fn run(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("root: {root:?}");
@@ -58,8 +58,8 @@ async fn run<F: AsyncFileSystem>(
   Ok(())
 }
 
-async fn directories<F: AsyncFileSystem>(
-  fs: &F,
+async fn directories(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("-- directories --");
@@ -77,8 +77,8 @@ async fn directories<F: AsyncFileSystem>(
   Ok(())
 }
 
-async fn write_and_read<F: AsyncFileSystem>(
-  fs: &F,
+async fn write_and_read(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("-- write / read --");
@@ -93,8 +93,8 @@ async fn write_and_read<F: AsyncFileSystem>(
 }
 
 /// Exercises the `tokio` IO traits on the returned file handles.
-async fn handle_io<F: AsyncFileSystem>(
-  fs: &F,
+async fn handle_io(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("-- handle io --");
@@ -121,8 +121,8 @@ async fn handle_io<F: AsyncFileSystem>(
   Ok(())
 }
 
-async fn listing<F: AsyncFileSystem>(
-  fs: &F,
+async fn listing(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("-- read_dir --");
@@ -141,8 +141,8 @@ async fn listing<F: AsyncFileSystem>(
   Ok(())
 }
 
-async fn metadata_and_permissions<F: AsyncFileSystem>(
-  fs: &F,
+async fn metadata_and_permissions(
+  fs: &dyn AsyncFileSystem,
   root: &Path,
 ) -> io::Result<()> {
   println!("-- metadata / permissions --");

@@ -27,11 +27,11 @@ async fn main() -> io::Result<()> {
   // `Dir` is not `Copy`, so clone the (shallow) handle out of the static.
   let fs = AsyncIncludeDirFileSystem::new(ASSETS.clone());
 
-  read(&fs).await?;
-  handle_io(&fs).await?;
-  metadata(&fs).await?;
-  listing(&fs).await?;
-  mutations_are_unsupported(&fs).await?;
+  read(fs.as_ref()).await?;
+  handle_io(fs.as_ref()).await?;
+  metadata(fs.as_ref()).await?;
+  listing(fs.as_ref()).await?;
+  mutations_are_unsupported(fs.as_ref()).await?;
 
   println!();
   println!("done");
@@ -39,7 +39,7 @@ async fn main() -> io::Result<()> {
   Ok(())
 }
 
-async fn read<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn read(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- read --");
 
   println!(
@@ -58,7 +58,7 @@ async fn read<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn handle_io<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn handle_io(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- handle io --");
 
   let mut handle = fs.open(Path::new("/nested/deep/note.md")).await?;
@@ -70,7 +70,7 @@ async fn handle_io<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn metadata<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn metadata(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- metadata --");
 
   let file = fs.metadata(Path::new("/hello.txt")).await?;
@@ -84,7 +84,7 @@ async fn metadata<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn listing<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn listing(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- read_dir --");
 
   println!("  /");
@@ -115,7 +115,7 @@ async fn listing<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
   Ok(())
 }
 
-async fn mutations_are_unsupported<F: AsyncFileSystem>(fs: &F) -> io::Result<()> {
+async fn mutations_are_unsupported(fs: &dyn AsyncFileSystem) -> io::Result<()> {
   println!("-- mutations are unsupported --");
 
   let write = fs

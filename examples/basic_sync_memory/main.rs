@@ -11,6 +11,7 @@
 
 use std::io::Write;
 use std::path::Path;
+use std::sync::Arc;
 
 use dyn_fs::FileSystem;
 use dyn_fs::OpenOptions;
@@ -18,17 +19,17 @@ use dyn_fs::ext::FileSystemExt;
 use dyn_fs::mem::MemoryFileSystem;
 
 fn main() -> std::io::Result<()> {
-  let fs = MemoryFileSystem::default();
+  let fs = MemoryFileSystem::new();
 
-  directories(&fs)?;
-  write_and_read(&fs)?;
-  listing(&fs)?;
-  copy_rename_and_symlink(&fs)?;
-  open_with(&fs)?;
-  metadata_and_permissions(&fs)?;
-  ancestor_search(&fs)?;
+  directories(fs.as_ref())?;
+  write_and_read(fs.as_ref())?;
+  listing(fs.as_ref())?;
+  copy_rename_and_symlink(fs.as_ref())?;
+  open_with(fs.as_ref())?;
+  metadata_and_permissions(fs.as_ref())?;
+  ancestor_search(fs.as_ref())?;
   shared_state(&fs)?;
-  cleanup(&fs)?;
+  cleanup(fs.as_ref())?;
 
   println!();
   println!("done");
@@ -183,7 +184,7 @@ fn metadata_and_permissions(fs: &dyn FileSystem) -> std::io::Result<()> {
 }
 
 /// Searches for a file by name in a directory and all of its parents.
-fn ancestor_search<F: FileSystem>(fs: &F) -> std::io::Result<()> {
+fn ancestor_search(fs: &dyn FileSystem) -> std::io::Result<()> {
   println!("-- find_ancestor_file --");
 
   fs.write(Path::new("/config.toml"), b"[example]\n")?;
@@ -194,11 +195,11 @@ fn ancestor_search<F: FileSystem>(fs: &F) -> std::io::Result<()> {
   Ok(())
 }
 
-/// Clones of a `MemoryFileSystem` share the same underlying data.
-fn shared_state(fs: &MemoryFileSystem) -> std::io::Result<()> {
+/// Clones of the shared handle point at the same underlying file system.
+fn shared_state(fs: &Arc<dyn FileSystem>) -> std::io::Result<()> {
   println!("-- shared state --");
 
-  let clone = fs.clone();
+  let clone = Arc::clone(fs);
   clone.write(Path::new("/shared.txt"), b"written through the clone")?;
 
   println!(
