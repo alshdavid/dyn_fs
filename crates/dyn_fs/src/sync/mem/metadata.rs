@@ -1,44 +1,56 @@
-use crate::file_system::Metadata;
+use std::io;
+use std::time::SystemTime;
 
+use super::MemoryFileType;
+use crate::file_system::FileType;
+use crate::file_system::Metadata;
+use crate::file_system::Permissions;
+
+/// A metadata snapshot of an in-memory file system node.
+#[derive(Debug, Clone)]
 pub struct MemoryMetadata {
-  pub(super) inner_is_file: bool,
-  pub(super) inner_is_dir: bool,
+  pub(crate) file_type: MemoryFileType,
+  pub(crate) len: u64,
+  pub(crate) permissions: Permissions,
+  pub(crate) accessed: SystemTime,
+  pub(crate) created: SystemTime,
+  pub(crate) modified: SystemTime,
 }
 
 impl Metadata for MemoryMetadata {
+  fn accessed(&self) -> io::Result<SystemTime> {
+    Ok(self.accessed)
+  }
+
+  fn created(&self) -> io::Result<SystemTime> {
+    Ok(self.created)
+  }
+
+  fn file_type(&self) -> Box<dyn FileType + Send + Sync> {
+    Box::new(self.file_type)
+  }
+
   fn is_dir(&self) -> bool {
-    self.inner_is_dir
+    self.file_type.is_directory
   }
 
   fn is_file(&self) -> bool {
-    self.inner_is_file
-  }
-
-  fn accessed(&self) -> std::io::Result<std::time::SystemTime> {
-    todo!()
-  }
-
-  fn created(&self) -> std::io::Result<std::time::SystemTime> {
-    todo!()
-  }
-
-  fn file_type(&self) -> Box<dyn crate::file_system::FileType + Send + Sync> {
-    todo!()
+    self.file_type.is_file
   }
 
   fn is_symlink(&self) -> bool {
-    todo!()
+    self.file_type.is_symlink
   }
 
-  fn modified(&self) -> std::io::Result<std::time::SystemTime> {
-    todo!()
+  fn modified(&self) -> io::Result<SystemTime> {
+    Ok(self.modified)
   }
 
-  fn permissions(&self) -> crate::file_system::Permissions {
-    todo!()
+  fn permissions(&self) -> Permissions {
+    self.permissions
   }
 
   fn len(&self) -> u64 {
-    todo!()
+    self.len
   }
 }
