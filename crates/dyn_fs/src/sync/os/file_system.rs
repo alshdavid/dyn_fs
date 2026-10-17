@@ -1,16 +1,20 @@
 use std::fs;
 use std::io;
 #[cfg(unix)]
+use std::os::unix::fs::DirBuilderExt;
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
 
 use super::OsMetadata;
 use super::OsReadDir;
+use crate::file_system::DirBuilder;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
 use crate::file_system::FileTimes;
 use crate::file_system::Metadata;
+use crate::file_system::OpenOptions;
 use crate::file_system::Permissions;
 use crate::file_system::ReadDir;
 
@@ -18,11 +22,21 @@ use crate::file_system::ReadDir;
 pub struct OsFileSystem;
 
 impl FileSystem for OsFileSystem {
-  fn open(
+  fn open_with(
     &self,
     path: &Path,
+    options: &OpenOptions,
   ) -> io::Result<Box<dyn File + Send + Sync>> {
-    Ok(Box::new(fs::File::open(path)?))
+    let mut open_options = fs::OpenOptions::new();
+    open_options
+      .read(options.get_read())
+      .write(options.get_write())
+      .append(options.get_append())
+      .truncate(options.get_truncate())
+      .create(options.get_create())
+      .create_new(options.get_create_new());
+
+    Ok(Box::new(open_options.open(path)?))
   }
 
   fn canonicalize(
@@ -59,6 +73,20 @@ impl FileSystem for OsFileSystem {
     path: &Path,
   ) -> io::Result<()> {
     fs::create_dir_all(path)
+  }
+
+  fn create_dir_with(
+    &self,
+    path: &Path,
+    builder: &DirBuilder,
+  ) -> io::Result<()> {
+    let mut dir_builder = fs::DirBuilder::new();
+    dir_builder.recursive(builder.get_recursive());
+    #[cfg(unix)]
+    if let Some(mode) = builder.get_mode() {
+      dir_builder.mode(mode);
+    }
+    dir_builder.create(path)
   }
 
   fn hard_link(
@@ -148,6 +176,15 @@ impl FileSystem for OsFileSystem {
     fs::set_permissions(path, fs::Permissions::from_mode(perm.mode()))
   }
 
+  fn set_times(
+    &self,
+    path: &Path,
+    times: &FileTimes,
+  ) -> io::Result<()> {
+    let file = fs::File::open(path)?;
+    file.set_times(to_std_file_times(times))
+  }
+
   #[cfg(unix)]
   fn symlink(
     &self,
@@ -176,6 +213,13 @@ impl FileSystem for OsFileSystem {
   ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let metadata = fs::symlink_metadata(path)?;
     Ok(Box::new(OsMetadata::from(metadata)))
+  }
+
+  fn try_exists(
+    &self,
+    path: &Path,
+  ) -> io::Result<bool> {
+    path.try_exists()
   }
 
   fn write(
@@ -222,14 +266,7 @@ impl File for fs::File {
     &self,
     times: &FileTimes,
   ) -> io::Result<()> {
-    let mut file_times = fs::FileTimes::new();
-    if let Some(accessed) = times.accessed() {
-      file_times = file_times.set_accessed(accessed);
-    }
-    if let Some(modified) = times.modified() {
-      file_times = file_times.set_modified(modified);
-    }
-    fs::File::set_times(self, file_times)
+    fs::File::set_times(self, to_std_file_times(times))
   }
 
   fn sync_all(&self) -> io::Result<()> {
@@ -239,4 +276,15 @@ impl File for fs::File {
   fn sync_data(&self) -> io::Result<()> {
     fs::File::sync_data(self)
   }
+}
+
+fn to_std_file_times(times: &FileTimes) -> fs::FileTimes {
+  let mut file_times = fs::FileTimes::new();
+  if let Some(accessed) = times.accessed() {
+    file_times = file_times.set_accessed(accessed);
+  }
+  if let Some(modified) = times.modified() {
+    file_times = file_times.set_modified(modified);
+  }
+  file_times
 }

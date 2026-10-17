@@ -11,14 +11,16 @@ use std::sync::RwLockWriteGuard;
 use normalize_path::NormalizePath;
 
 use super::MemoryMetadata;
+use crate::file_system::DirBuilder;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
 use crate::file_system::FileTimes;
 use crate::file_system::Metadata;
+use crate::file_system::OpenOptions;
 use crate::file_system::Permissions;
 use crate::file_system::ReadDir;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Entry {
   File(Vec<u8>),
   Directory,
@@ -46,11 +48,59 @@ impl MemoryFileSystem {
 }
 
 impl FileSystem for MemoryFileSystem {
-  fn open(
+  fn open_with(
     &self,
     path: &Path,
+    options: &OpenOptions,
   ) -> io::Result<Box<dyn File + Send + Sync>> {
-    Ok(Box::new(Cursor::new(self.read(path)?)))
+    let path = path.normalize();
+
+    let existing = {
+      let files = self.files_read()?;
+      files.get(&path).cloned()
+    };
+
+    if options.get_create_new() && existing.is_some() {
+      return Err(io::Error::new(
+        io::ErrorKind::AlreadyExists,
+        "File already exists",
+      ));
+    }
+
+    let contents = match existing {
+      Some(Entry::File(contents)) => {
+        if options.get_truncate() {
+          Vec::new()
+        } else {
+          contents
+        }
+      }
+      Some(Entry::Directory) => {
+        return Err(io::Error::new(
+          io::ErrorKind::InvalidInput,
+          "Path is a directory",
+        ));
+      }
+      None => {
+        if options.get_create() || options.get_create_new() {
+          Vec::new()
+        } else {
+          return Err(io::Error::new(io::ErrorKind::NotFound, "File not found"));
+        }
+      }
+    };
+
+    {
+      let mut files = self.files_write()?;
+      files.insert(path.clone(), Entry::File(contents.clone()));
+      let mut dir = path.parent();
+      while let Some(parent) = dir {
+        files.insert(parent.to_path_buf(), Entry::Directory);
+        dir = parent.parent();
+      }
+    }
+
+    Ok(Box::new(Cursor::new(contents)))
   }
 
   fn read(
@@ -155,6 +205,14 @@ impl FileSystem for MemoryFileSystem {
     todo!()
   }
 
+  fn create_dir_with(
+    &self,
+    _path: &Path,
+    _builder: &DirBuilder,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
   fn hard_link(
     &self,
     _original: &Path,
@@ -207,6 +265,14 @@ impl FileSystem for MemoryFileSystem {
     todo!()
   }
 
+  fn set_times(
+    &self,
+    _path: &Path,
+    _times: &FileTimes,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
   fn symlink(
     &self,
     _original: &Path,
@@ -220,6 +286,15 @@ impl FileSystem for MemoryFileSystem {
     _path: &Path,
   ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     todo!()
+  }
+
+  fn try_exists(
+    &self,
+    path: &Path,
+  ) -> io::Result<bool> {
+    let path = path.normalize();
+    let files = self.files_read()?;
+    Ok(files.contains_key(&path))
   }
 }
 

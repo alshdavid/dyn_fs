@@ -10,9 +10,19 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 pub trait FileSystem: Send + Sync {
+  /// Opens a file in read-only mode.
   fn open(
     &self,
     path: &Path,
+  ) -> io::Result<Box<dyn File + Send + Sync>> {
+    self.open_with(path, OpenOptions::new().read(true))
+  }
+
+  /// Opens a file with the given options.
+  fn open_with(
+    &self,
+    path: &Path,
+    options: &OpenOptions,
   ) -> io::Result<Box<dyn File + Send + Sync>>;
 
   fn canonicalize(
@@ -39,6 +49,13 @@ pub trait FileSystem: Send + Sync {
   fn create_dir_all(
     &self,
     path: &Path,
+  ) -> io::Result<()>;
+
+  /// Creates a directory using the given builder.
+  fn create_dir_with(
+    &self,
+    path: &Path,
+    builder: &DirBuilder,
   ) -> io::Result<()>;
 
   fn hard_link(
@@ -94,6 +111,13 @@ pub trait FileSystem: Send + Sync {
     perm: &Permissions,
   ) -> io::Result<()>;
 
+  /// Changes the timestamps of the file or directory at the given path.
+  fn set_times(
+    &self,
+    path: &Path,
+    times: &FileTimes,
+  ) -> io::Result<()>;
+
   fn symlink(
     &self,
     original: &Path,
@@ -104,6 +128,20 @@ pub trait FileSystem: Send + Sync {
     &self,
     path: &Path,
   ) -> io::Result<Box<dyn Metadata + Send + Sync>>;
+
+  /// Returns `Ok(true)` if the path exists.
+  fn try_exists(
+    &self,
+    path: &Path,
+  ) -> io::Result<bool>;
+
+  /// Returns `true` if the path exists, ignoring any errors.
+  fn exists(
+    &self,
+    path: &Path,
+  ) -> bool {
+    self.try_exists(path).unwrap_or(false)
+  }
 
   fn write(
     &self,
@@ -250,6 +288,162 @@ impl FileTimes {
   ) -> &mut Self {
     self.modified = Some(time);
     self
+  }
+}
+
+/// Options and flags which can be used to configure how a file is opened.
+///
+/// Mirrors [`std::fs::OpenOptions`] without leaking the standard library type
+/// into the abstraction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct OpenOptions {
+  read: bool,
+  write: bool,
+  append: bool,
+  truncate: bool,
+  create: bool,
+  create_new: bool,
+}
+
+impl OpenOptions {
+  /// Creates a blank new set of options.
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  /// Sets the option for read access.
+  pub fn read(
+    &mut self,
+    read: bool,
+  ) -> &mut Self {
+    self.read = read;
+    self
+  }
+
+  /// Sets the option for write access.
+  pub fn write(
+    &mut self,
+    write: bool,
+  ) -> &mut Self {
+    self.write = write;
+    self
+  }
+
+  /// Sets the option for append mode.
+  pub fn append(
+    &mut self,
+    append: bool,
+  ) -> &mut Self {
+    self.append = append;
+    self
+  }
+
+  /// Sets the option to truncate the file.
+  pub fn truncate(
+    &mut self,
+    truncate: bool,
+  ) -> &mut Self {
+    self.truncate = truncate;
+    self
+  }
+
+  /// Sets the option to create the file if it does not exist.
+  pub fn create(
+    &mut self,
+    create: bool,
+  ) -> &mut Self {
+    self.create = create;
+    self
+  }
+
+  /// Sets the option to create a new file, failing if it already exists.
+  pub fn create_new(
+    &mut self,
+    create_new: bool,
+  ) -> &mut Self {
+    self.create_new = create_new;
+    self
+  }
+
+  /// Returns whether read access is enabled.
+  pub fn get_read(&self) -> bool {
+    self.read
+  }
+
+  /// Returns whether write access is enabled.
+  pub fn get_write(&self) -> bool {
+    self.write
+  }
+
+  /// Returns whether append mode is enabled.
+  pub fn get_append(&self) -> bool {
+    self.append
+  }
+
+  /// Returns whether truncation is enabled.
+  pub fn get_truncate(&self) -> bool {
+    self.truncate
+  }
+
+  /// Returns whether creating the file is enabled.
+  pub fn get_create(&self) -> bool {
+    self.create
+  }
+
+  /// Returns whether creating a new file is enabled.
+  pub fn get_create_new(&self) -> bool {
+    self.create_new
+  }
+}
+
+/// A builder used to create directories in various manners.
+///
+/// Mirrors [`std::fs::DirBuilder`] without leaking the standard library type
+/// into the abstraction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct DirBuilder {
+  recursive: bool,
+  #[cfg(unix)]
+  mode: u32,
+  #[cfg(unix)]
+  has_mode: bool,
+}
+
+impl DirBuilder {
+  /// Creates a new builder with default options.
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  /// Sets whether intermediate directories should be created.
+  pub fn recursive(
+    &mut self,
+    recursive: bool,
+  ) -> &mut Self {
+    self.recursive = recursive;
+    self
+  }
+
+  /// Sets the Unix permission mode for the created directories.
+  #[cfg(unix)]
+  pub fn mode(
+    &mut self,
+    mode: u32,
+  ) -> &mut Self {
+    self.mode = mode;
+    self.has_mode = true;
+    self
+  }
+
+  /// Returns whether intermediate directories will be created.
+  pub fn get_recursive(&self) -> bool {
+    self.recursive
+  }
+
+  /// Returns the Unix permission mode, if one was set.
+  #[cfg(unix)]
+  pub fn get_mode(&self) -> Option<u32> {
+    if self.has_mode { Some(self.mode) } else { None }
   }
 }
 
