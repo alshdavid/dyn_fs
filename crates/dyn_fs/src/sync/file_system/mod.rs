@@ -487,7 +487,13 @@ pub trait ReadDir: Iterator<Item = io::Result<Box<dyn DirEntry + Send + Sync>>> 
 
 impl<T> ReadDir for T where T: Iterator<Item = io::Result<Box<dyn DirEntry + Send + Sync>>> {}
 
-pub trait File: io::Read + io::Seek + io::Write {
+/// A seekable, read/write file handle.
+///
+/// Its read / write / seek supertraits are `std::io`'s own [`io::Read`] /
+/// [`io::Write`] / [`io::Seek`], and it requires `Send + Sync` so handles can
+/// be moved and shared across threads. The trait stays object-safe, so handles
+/// are handed out as `Box<dyn File>`.
+pub trait File: io::Read + io::Seek + io::Write + Send + Sync {
   /// Queries metadata about the underlying file.
   fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>>;
 
