@@ -4,14 +4,14 @@ use std::time::SystemTime;
 use super::AsyncMemoryFileType;
 use crate::asynch::file_system::AsyncFileType;
 use crate::asynch::file_system::AsyncMetadata;
-use crate::asynch::file_system::AsyncPermissions;
+use crate::asynch::file_system::Permissions;
 
 /// A metadata snapshot of an in-memory file system node.
 #[derive(Debug, Clone)]
 pub struct AsyncMemoryMetadata {
   pub(crate) file_type: AsyncMemoryFileType,
   pub(crate) len: u64,
-  pub(crate) permissions: AsyncPermissions,
+  pub(crate) permissions: Permissions,
   pub(crate) accessed: SystemTime,
   pub(crate) created: SystemTime,
   pub(crate) modified: SystemTime,
@@ -46,7 +46,7 @@ impl AsyncMetadata for AsyncMemoryMetadata {
     Ok(self.modified)
   }
 
-  fn permissions(&self) -> AsyncPermissions {
+  fn permissions(&self) -> Permissions {
     self.permissions
   }
 

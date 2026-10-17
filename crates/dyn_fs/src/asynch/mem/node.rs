@@ -6,7 +6,7 @@ use std::time::SystemTime;
 
 use super::AsyncMemoryFileType;
 use super::AsyncMemoryMetadata;
-use crate::asynch::file_system::AsyncPermissions;
+use crate::asynch::file_system::Permissions;
 
 /// The in-memory node table, keyed by normalized path.
 pub(crate) type AsyncNodes = HashMap<PathBuf, AsyncNode>;
@@ -15,7 +15,7 @@ pub(crate) type AsyncNodes = HashMap<PathBuf, AsyncNode>;
 #[derive(Debug, Clone)]
 pub(crate) struct AsyncNode {
   pub kind: AsyncNodeKind,
-  pub permissions: AsyncPermissions,
+  pub permissions: Permissions,
   pub accessed: SystemTime,
   pub created: SystemTime,
   pub modified: SystemTime,
@@ -38,7 +38,7 @@ impl AsyncNode {
     let now = SystemTime::now();
     Self {
       kind: AsyncNodeKind::File(Arc::new(RwLock::new(contents))),
-      permissions: AsyncPermissions::new(),
+      permissions: Permissions::new(),
       accessed: now,
       created: now,
       modified: now,
@@ -50,7 +50,7 @@ impl AsyncNode {
     let now = SystemTime::now();
     Self {
       kind: AsyncNodeKind::Directory,
-      permissions: AsyncPermissions::new(),
+      permissions: Permissions::new(),
       accessed: now,
       created: now,
       modified: now,
@@ -62,7 +62,7 @@ impl AsyncNode {
     let now = SystemTime::now();
     Self {
       kind: AsyncNodeKind::Symlink(target),
-      permissions: AsyncPermissions::new(),
+      permissions: Permissions::new(),
       accessed: now,
       created: now,
       modified: now,
