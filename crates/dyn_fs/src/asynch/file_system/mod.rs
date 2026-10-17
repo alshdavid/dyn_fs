@@ -16,6 +16,7 @@ use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::time::SystemTime;
 
 pub use ::tokio::io::AsyncRead;
@@ -35,6 +36,8 @@ pub use crate::sync::file_system::Permissions;
 /// slice arguments are borrowed for the lifetime of the future, so a backend
 /// that can complete without spawning avoids any defensive copying.
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
+
+pub type AsyncFileSystemRef = Arc<dyn AsyncFileSystem>;
 
 /// A dynamically-dispatched, asynchronous virtual file system.
 ///

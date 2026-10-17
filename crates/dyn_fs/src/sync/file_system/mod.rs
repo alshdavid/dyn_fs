@@ -7,7 +7,10 @@ use std::ffi::OsString;
 use std::io;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::SystemTime;
+
+pub type FileSystemRef = Arc<dyn FileSystem>;
 
 pub trait FileSystem: Send + Sync {
   /// Opens a file in read-only mode.
