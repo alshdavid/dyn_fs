@@ -24,7 +24,7 @@ jobs:
       - id: generate
         run: |
           set -ex
-          LAST_VERSION=$(curl -sSL https://api.github.com/repos/alshdavid/dyn_fs/releases/latest | jq -r ".tag_name" | cut -d "." -f 2)
+          LAST_VERSION=$(curl -sSL https://api.github.com/repos/alshdavid/dyn_fs/releases/latest | jq -r ".tag_name")
           if [ "$LAST_VERSION" = "" ]; then
             # Commenting out to protect against overriding on error
             # LAST_VERSION="0"
@@ -32,9 +32,12 @@ jobs:
             exit 1
           fi
 
-          declare -i var="$LAST_VERSION"
-          var=$var+1
-          VERSION="0.$var.0"
+          MINOR_VERSION=$(echo "$LAST_VERSION" | cut -d "." -f 2)
+          PATCH_VERSION=$(echo "$LAST_VERSION" | cut -d "." -f 3)
+
+          declare -i patch="$PATCH_VERSION"
+          patch=$patch+1
+          VERSION="0.${MINOR_VERSION}.${patch}"
 
           echo $VERSION
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
