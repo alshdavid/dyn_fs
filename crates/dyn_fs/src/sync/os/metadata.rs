@@ -24,7 +24,7 @@ impl Metadata for OsMetadata {
     self.0.created()
   }
 
-  fn file_type(&self) -> Box<dyn FileType> {
+  fn file_type(&self) -> Box<dyn FileType + Send + Sync> {
     let file_type = self.0.file_type();
     Box::new(OsFileType::from(file_type))
   }
@@ -45,7 +45,7 @@ impl Metadata for OsMetadata {
     self.0.modified()
   }
 
-  fn permissions(&self) -> Box<dyn Permissions> {
+  fn permissions(&self) -> Box<dyn Permissions + Send + Sync> {
     let permissions = self.0.permissions();
     Box::new(OsPermissions::from(permissions))
   }

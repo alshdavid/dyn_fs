@@ -22,7 +22,7 @@ impl Metadata for MemoryMetadata {
     todo!()
   }
 
-  fn file_type(&self) -> Box<dyn crate::file_system::FileType> {
+  fn file_type(&self) -> Box<dyn crate::file_system::FileType + Send + Sync> {
     todo!()
   }
 
@@ -34,7 +34,7 @@ impl Metadata for MemoryMetadata {
     todo!()
   }
 
-  fn permissions(&self) -> Box<dyn crate::file_system::Permissions> {
+  fn permissions(&self) -> Box<dyn crate::file_system::Permissions + Send + Sync> {
     todo!()
   }
 

@@ -13,7 +13,7 @@ impl From<fs::ReadDir> for OsReadDir {
 }
 
 impl Iterator for OsReadDir {
-  type Item = io::Result<Box<dyn DirEntry>>;
+  type Item = io::Result<Box<dyn DirEntry + Send + Sync>>;
 
   fn next(&mut self) -> Option<Self::Item> {
     match self.0.next()? {

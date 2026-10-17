@@ -49,7 +49,7 @@ impl FileSystem for MemoryFileSystem {
   fn open(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn File>> {
+  ) -> io::Result<Box<dyn File + Send + Sync>> {
     Ok(Box::new(Cursor::new(self.read(path)?)))
   }
 
@@ -89,7 +89,7 @@ impl FileSystem for MemoryFileSystem {
   fn metadata(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn Metadata>> {
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let path = path.normalize();
     let files = self.files_read()?;
     let file = files.get(&path);
@@ -166,7 +166,7 @@ impl FileSystem for MemoryFileSystem {
   fn read_dir(
     &self,
     _path: &Path,
-  ) -> io::Result<Box<dyn ReadDir>> {
+  ) -> io::Result<Box<dyn ReadDir + Send + Sync>> {
     todo!()
   }
 
@@ -202,7 +202,7 @@ impl FileSystem for MemoryFileSystem {
   fn set_permissions(
     &self,
     _path: &Path,
-    _perm: &dyn crate::file_system::Permissions,
+    _perm: &(dyn crate::file_system::Permissions + Send + Sync),
   ) -> io::Result<()> {
     todo!()
   }
@@ -218,13 +218,13 @@ impl FileSystem for MemoryFileSystem {
   fn symlink_metadata(
     &self,
     _path: &Path,
-  ) -> io::Result<Box<dyn Metadata>> {
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     todo!()
   }
 }
 
 impl File for Cursor<Vec<u8>> {
-  fn metadata(&self) -> io::Result<Box<dyn Metadata>> {
+  fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     Ok(Box::new(MemoryMetadata {
       inner_is_file: true,
       inner_is_dir: false,
@@ -240,7 +240,7 @@ impl File for Cursor<Vec<u8>> {
 
   fn set_permissions(
     &self,
-    _perm: &dyn Permissions,
+    _perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()> {
     todo!()
   }

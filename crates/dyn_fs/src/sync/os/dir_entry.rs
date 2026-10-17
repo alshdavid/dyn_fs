@@ -26,12 +26,12 @@ impl DirEntry for OsDirEntry {
     self.0.file_name()
   }
 
-  fn file_type(&self) -> io::Result<Box<dyn FileType>> {
+  fn file_type(&self) -> io::Result<Box<dyn FileType + Send + Sync>> {
     let file_type = self.0.file_type()?;
     Ok(Box::new(OsFileType::from(file_type)))
   }
 
-  fn metadata(&self) -> io::Result<Box<dyn Metadata>> {
+  fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let metadata = self.0.metadata()?;
     Ok(Box::new(OsMetadata::from(metadata)))
   }

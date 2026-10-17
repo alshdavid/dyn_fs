@@ -21,7 +21,7 @@ impl FileSystem for OsFileSystem {
   fn open(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn File>> {
+  ) -> io::Result<Box<dyn File + Send + Sync>> {
     Ok(Box::new(fs::File::open(path)?))
   }
 
@@ -72,7 +72,7 @@ impl FileSystem for OsFileSystem {
   fn metadata(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn Metadata>> {
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let metadata = fs::metadata(path)?;
     Ok(Box::new(OsMetadata::from(metadata)))
   }
@@ -87,7 +87,7 @@ impl FileSystem for OsFileSystem {
   fn read_dir(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn ReadDir>> {
+  ) -> io::Result<Box<dyn ReadDir + Send + Sync>> {
     let read_dir = fs::read_dir(path)?;
     Ok(Box::new(OsReadDir::from(read_dir)))
   }
@@ -132,7 +132,7 @@ impl FileSystem for OsFileSystem {
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()> {
     let mut x = fs::metadata(path)?.permissions();
     x.set_readonly(perm.readonly());
@@ -143,7 +143,7 @@ impl FileSystem for OsFileSystem {
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()> {
     fs::set_permissions(path, fs::Permissions::from_mode(perm.mode()))
   }
@@ -173,7 +173,7 @@ impl FileSystem for OsFileSystem {
   fn symlink_metadata(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn Metadata>> {
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let metadata = fs::symlink_metadata(path)?;
     Ok(Box::new(OsMetadata::from(metadata)))
   }
@@ -188,7 +188,7 @@ impl FileSystem for OsFileSystem {
 }
 
 impl File for fs::File {
-  fn metadata(&self) -> io::Result<Box<dyn Metadata>> {
+  fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>> {
     let metadata = fs::File::metadata(self)?;
     Ok(Box::new(OsMetadata::from(metadata)))
   }
@@ -203,7 +203,7 @@ impl File for fs::File {
   #[cfg(unix)]
   fn set_permissions(
     &self,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()> {
     fs::File::set_permissions(self, fs::Permissions::from_mode(perm.mode()))
   }
@@ -211,7 +211,7 @@ impl File for fs::File {
   #[cfg(not(unix))]
   fn set_permissions(
     &self,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()> {
     let mut permissions = fs::File::metadata(self)?.permissions();
     permissions.set_readonly(perm.readonly());

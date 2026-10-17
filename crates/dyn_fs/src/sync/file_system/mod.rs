@@ -13,7 +13,7 @@ pub trait FileSystem: Send + Sync {
   fn open(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn File>>;
+  ) -> io::Result<Box<dyn File + Send + Sync>>;
 
   fn canonicalize(
     &self,
@@ -50,7 +50,7 @@ pub trait FileSystem: Send + Sync {
   fn metadata(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn Metadata>>;
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>>;
 
   fn read(
     &self,
@@ -60,7 +60,7 @@ pub trait FileSystem: Send + Sync {
   fn read_dir(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn ReadDir>>;
+  ) -> io::Result<Box<dyn ReadDir + Send + Sync>>;
 
   fn read_to_string(
     &self,
@@ -91,7 +91,7 @@ pub trait FileSystem: Send + Sync {
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()>;
 
   fn symlink(
@@ -103,7 +103,7 @@ pub trait FileSystem: Send + Sync {
   fn symlink_metadata(
     &self,
     path: &Path,
-  ) -> io::Result<Box<dyn Metadata>>;
+  ) -> io::Result<Box<dyn Metadata + Send + Sync>>;
 
   fn write(
     &self,
@@ -115,12 +115,12 @@ pub trait FileSystem: Send + Sync {
 pub trait Metadata {
   fn accessed(&self) -> io::Result<SystemTime>;
   fn created(&self) -> io::Result<SystemTime>;
-  fn file_type(&self) -> Box<dyn FileType>;
+  fn file_type(&self) -> Box<dyn FileType + Send + Sync>;
   fn is_dir(&self) -> bool;
   fn is_file(&self) -> bool;
   fn is_symlink(&self) -> bool;
   fn modified(&self) -> io::Result<SystemTime>;
-  fn permissions(&self) -> Box<dyn Permissions>;
+  fn permissions(&self) -> Box<dyn Permissions + Send + Sync>;
   fn len(&self) -> u64;
 }
 
@@ -202,23 +202,23 @@ pub trait DirEntry {
   fn file_name(&self) -> OsString;
 
   /// The file type of this entry, without following symlinks.
-  fn file_type(&self) -> io::Result<Box<dyn FileType>>;
+  fn file_type(&self) -> io::Result<Box<dyn FileType + Send + Sync>>;
 
   /// Metadata for this entry, without following symlinks.
-  fn metadata(&self) -> io::Result<Box<dyn Metadata>>;
+  fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>>;
 }
 
 /// An abstract iterator over the entries of a directory.
 ///
 /// This is implemented by any iterator yielding boxed [`DirEntry`] values,
 /// allowing backends to return their own concrete iterators.
-pub trait ReadDir: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
+pub trait ReadDir: Iterator<Item = io::Result<Box<dyn DirEntry + Send + Sync>>> {}
 
-impl<T> ReadDir for T where T: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
+impl<T> ReadDir for T where T: Iterator<Item = io::Result<Box<dyn DirEntry + Send + Sync>>> {}
 
 pub trait File: io::Read + io::Seek + io::Write {
   /// Queries metadata about the underlying file.
-  fn metadata(&self) -> io::Result<Box<dyn Metadata>>;
+  fn metadata(&self) -> io::Result<Box<dyn Metadata + Send + Sync>>;
 
   /// Truncates or extends the underlying file, updating the size to `size`.
   fn set_len(
@@ -229,7 +229,7 @@ pub trait File: io::Read + io::Seek + io::Write {
   /// Changes the permissions of the underlying file.
   fn set_permissions(
     &self,
-    perm: &dyn Permissions,
+    perm: &(dyn Permissions + Send + Sync),
   ) -> io::Result<()>;
 
   /// Changes the timestamps of the underlying file.
