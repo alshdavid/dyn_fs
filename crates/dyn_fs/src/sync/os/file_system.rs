@@ -9,6 +9,7 @@ use super::OsMetadata;
 use super::OsReadDir;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
+use crate::file_system::FileTimes;
 use crate::file_system::Metadata;
 use crate::file_system::Permissions;
 use crate::file_system::ReadDir;
@@ -164,4 +165,56 @@ impl FileSystem for OsFileSystem {
   }
 }
 
-impl File for fs::File {}
+impl File for fs::File {
+  fn metadata(&self) -> io::Result<Box<dyn Metadata>> {
+    let metadata = fs::File::metadata(self)?;
+    Ok(Box::new(OsMetadata::from(metadata)))
+  }
+
+  fn set_len(
+    &self,
+    size: u64,
+  ) -> io::Result<()> {
+    fs::File::set_len(self, size)
+  }
+
+  #[cfg(unix)]
+  fn set_permissions(
+    &self,
+    perm: &dyn Permissions,
+  ) -> io::Result<()> {
+    fs::File::set_permissions(self, fs::Permissions::from_mode(perm.mode()))
+  }
+
+  #[cfg(not(unix))]
+  fn set_permissions(
+    &self,
+    perm: &dyn Permissions,
+  ) -> io::Result<()> {
+    let mut permissions = fs::File::metadata(self)?.permissions();
+    permissions.set_readonly(perm.readonly());
+    fs::File::set_permissions(self, permissions)
+  }
+
+  fn set_times(
+    &self,
+    times: &FileTimes,
+  ) -> io::Result<()> {
+    let mut file_times = fs::FileTimes::new();
+    if let Some(accessed) = times.accessed() {
+      file_times = file_times.set_accessed(accessed);
+    }
+    if let Some(modified) = times.modified() {
+      file_times = file_times.set_modified(modified);
+    }
+    fs::File::set_times(self, file_times)
+  }
+
+  fn sync_all(&self) -> io::Result<()> {
+    fs::File::sync_all(self)
+  }
+
+  fn sync_data(&self) -> io::Result<()> {
+    fs::File::sync_data(self)
+  }
+}

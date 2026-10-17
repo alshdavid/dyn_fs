@@ -136,6 +136,51 @@ pub trait Permissions {
   );
 }
 
+/// Value used to set the accessed and modified timestamps of a file.
+///
+/// Mirrors [`std::fs::FileTimes`] without leaking the standard library type
+/// into the abstraction.
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FileTimes {
+  accessed: Option<SystemTime>,
+  modified: Option<SystemTime>,
+}
+
+impl FileTimes {
+  /// Creates a new `FileTimes` with no timestamps set.
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  /// Returns the accessed timestamp, if set.
+  pub fn accessed(&self) -> Option<SystemTime> {
+    self.accessed
+  }
+
+  /// Returns the modified timestamp, if set.
+  pub fn modified(&self) -> Option<SystemTime> {
+    self.modified
+  }
+
+  /// Sets the accessed timestamp.
+  pub fn set_accessed(
+    &mut self,
+    time: SystemTime,
+  ) -> &mut Self {
+    self.accessed = Some(time);
+    self
+  }
+
+  /// Sets the modified timestamp.
+  pub fn set_modified(
+    &mut self,
+    time: SystemTime,
+  ) -> &mut Self {
+    self.modified = Some(time);
+    self
+  }
+}
+
 pub trait FileType {
   fn is_dir(&self) -> bool;
   fn is_file(&self) -> bool;
@@ -165,4 +210,31 @@ pub trait ReadDir: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
 
 impl<T> ReadDir for T where T: Iterator<Item = io::Result<Box<dyn DirEntry>>> {}
 
-pub trait File: io::Read + io::Write {}
+pub trait File: io::Read + io::Seek + io::Write {
+  /// Queries metadata about the underlying file.
+  fn metadata(&self) -> io::Result<Box<dyn Metadata>>;
+
+  /// Truncates or extends the underlying file, updating the size to `size`.
+  fn set_len(
+    &self,
+    size: u64,
+  ) -> io::Result<()>;
+
+  /// Changes the permissions of the underlying file.
+  fn set_permissions(
+    &self,
+    perm: &dyn Permissions,
+  ) -> io::Result<()>;
+
+  /// Changes the timestamps of the underlying file.
+  fn set_times(
+    &self,
+    times: &FileTimes,
+  ) -> io::Result<()>;
+
+  /// Attempts to sync all OS-internal metadata to disk.
+  fn sync_all(&self) -> io::Result<()>;
+
+  /// Attempts to sync file data, but not metadata, to disk.
+  fn sync_data(&self) -> io::Result<()>;
+}

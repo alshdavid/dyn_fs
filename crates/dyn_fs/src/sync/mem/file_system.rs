@@ -13,7 +13,9 @@ use normalize_path::NormalizePath;
 use super::MemoryMetadata;
 use crate::file_system::File;
 use crate::file_system::FileSystem;
+use crate::file_system::FileTimes;
 use crate::file_system::Metadata;
+use crate::file_system::Permissions;
 use crate::file_system::ReadDir;
 
 #[derive(Debug)]
@@ -213,4 +215,40 @@ impl FileSystem for MemoryFileSystem {
   }
 }
 
-impl File for Cursor<Vec<u8>> {}
+impl File for Cursor<Vec<u8>> {
+  fn metadata(&self) -> io::Result<Box<dyn Metadata>> {
+    Ok(Box::new(MemoryMetadata {
+      inner_is_file: true,
+      inner_is_dir: false,
+    }))
+  }
+
+  fn set_len(
+    &self,
+    _size: u64,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
+  fn set_permissions(
+    &self,
+    _perm: &dyn Permissions,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
+  fn set_times(
+    &self,
+    _times: &FileTimes,
+  ) -> io::Result<()> {
+    todo!()
+  }
+
+  fn sync_all(&self) -> io::Result<()> {
+    Ok(())
+  }
+
+  fn sync_data(&self) -> io::Result<()> {
+    Ok(())
+  }
+}
