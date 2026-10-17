@@ -91,7 +91,7 @@ pub trait FileSystem: Send + Sync {
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()>;
 
   fn symlink(
@@ -120,26 +120,92 @@ pub trait Metadata {
   fn is_file(&self) -> bool;
   fn is_symlink(&self) -> bool;
   fn modified(&self) -> io::Result<SystemTime>;
-  fn permissions(&self) -> Box<dyn Permissions + Send + Sync>;
+  fn permissions(&self) -> Permissions;
   fn len(&self) -> u64;
 }
 
-pub trait Permissions {
-  fn readonly(&self) -> bool;
+/// The permissions of a file or directory.
+///
+/// Unlike the standard library this is a single concrete value type, so it can
+/// be cloned and passed around without boxing. On Unix the full permission
+/// `mode` is available; on other platforms only the readonly flag is tracked.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Permissions {
+  readonly: bool,
+  #[cfg(unix)]
+  mode: u32,
+}
 
-  fn set_readonly(
+impl Permissions {
+  /// Creates a new, writable permission set.
+  pub fn new() -> Self {
+    Self {
+      readonly: false,
+      #[cfg(unix)]
+      mode: 0o666,
+    }
+  }
+
+  /// Creates a permission set from a readonly flag.
+  pub fn from_readonly(readonly: bool) -> Self {
+    let mut permissions = Self::new();
+    permissions.set_readonly(readonly);
+    permissions
+  }
+
+  /// Creates a permission set from Unix permission bits.
+  #[cfg(unix)]
+  pub fn from_mode(mode: u32) -> Self {
+    Self {
+      readonly: mode & 0o222 == 0,
+      mode,
+    }
+  }
+
+  /// Returns `true` if the file is readonly.
+  pub fn readonly(&self) -> bool {
+    self.readonly
+  }
+
+  /// Sets the readonly flag.
+  ///
+  /// On Unix this toggles the write bits of the mode.
+  pub fn set_readonly(
     &mut self,
     readonly: bool,
-  );
+  ) {
+    self.readonly = readonly;
+    #[cfg(unix)]
+    {
+      if readonly {
+        self.mode &= !0o222;
+      } else {
+        self.mode |= 0o222;
+      }
+    }
+  }
 
+  /// Returns the Unix permission bits.
   #[cfg(unix)]
-  fn mode(&self) -> u32;
+  pub fn mode(&self) -> u32 {
+    self.mode
+  }
 
+  /// Sets the Unix permission bits.
   #[cfg(unix)]
-  fn set_mode(
+  pub fn set_mode(
     &mut self,
     mode: u32,
-  );
+  ) {
+    self.mode = mode;
+    self.readonly = mode & 0o222 == 0;
+  }
+}
+
+impl Default for Permissions {
+  fn default() -> Self {
+    Self::new()
+  }
 }
 
 /// Value used to set the accessed and modified timestamps of a file.
@@ -229,7 +295,7 @@ pub trait File: io::Read + io::Seek + io::Write {
   /// Changes the permissions of the underlying file.
   fn set_permissions(
     &self,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()>;
 
   /// Changes the timestamps of the underlying file.

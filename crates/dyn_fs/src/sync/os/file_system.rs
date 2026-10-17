@@ -128,22 +128,22 @@ impl FileSystem for OsFileSystem {
     fs::rename(from, to)
   }
 
-  #[cfg(windows)]
+  #[cfg(not(unix))]
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()> {
-    let mut x = fs::metadata(path)?.permissions();
-    x.set_readonly(perm.readonly());
-    Ok(())
+    let mut permissions = fs::metadata(path)?.permissions();
+    permissions.set_readonly(perm.readonly());
+    fs::set_permissions(path, permissions)
   }
 
   #[cfg(unix)]
   fn set_permissions(
     &self,
     path: &Path,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()> {
     fs::set_permissions(path, fs::Permissions::from_mode(perm.mode()))
   }
@@ -203,7 +203,7 @@ impl File for fs::File {
   #[cfg(unix)]
   fn set_permissions(
     &self,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()> {
     fs::File::set_permissions(self, fs::Permissions::from_mode(perm.mode()))
   }
@@ -211,7 +211,7 @@ impl File for fs::File {
   #[cfg(not(unix))]
   fn set_permissions(
     &self,
-    perm: &(dyn Permissions + Send + Sync),
+    perm: &Permissions,
   ) -> io::Result<()> {
     let mut permissions = fs::File::metadata(self)?.permissions();
     permissions.set_readonly(perm.readonly());

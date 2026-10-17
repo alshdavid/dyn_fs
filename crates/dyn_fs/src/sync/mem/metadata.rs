@@ -34,7 +34,7 @@ impl Metadata for MemoryMetadata {
     todo!()
   }
 
-  fn permissions(&self) -> Box<dyn crate::file_system::Permissions + Send + Sync> {
+  fn permissions(&self) -> crate::file_system::Permissions {
     todo!()
   }
 

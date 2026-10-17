@@ -9,5 +9,4 @@ pub use self::dir_entry::*;
 pub use self::file_system::*;
 pub use self::file_type::*;
 pub use self::metadata::*;
-pub use self::permissions::*;
 pub use self::read_dir::*;

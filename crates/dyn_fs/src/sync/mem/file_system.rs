@@ -202,7 +202,7 @@ impl FileSystem for MemoryFileSystem {
   fn set_permissions(
     &self,
     _path: &Path,
-    _perm: &(dyn crate::file_system::Permissions + Send + Sync),
+    _perm: &Permissions,
   ) -> io::Result<()> {
     todo!()
   }
@@ -240,7 +240,7 @@ impl File for Cursor<Vec<u8>> {
 
   fn set_permissions(
     &self,
-    _perm: &(dyn Permissions + Send + Sync),
+    _perm: &Permissions,
   ) -> io::Result<()> {
     todo!()
   }

@@ -2,7 +2,6 @@ use std::fs;
 use std::time::SystemTime;
 
 use super::OsFileType;
-use super::OsPermissions;
 use crate::file_system::FileType;
 use crate::file_system::Metadata;
 use crate::file_system::Permissions;
@@ -45,9 +44,9 @@ impl Metadata for OsMetadata {
     self.0.modified()
   }
 
-  fn permissions(&self) -> Box<dyn Permissions + Send + Sync> {
+  fn permissions(&self) -> Permissions {
     let permissions = self.0.permissions();
-    Box::new(OsPermissions::from(permissions))
+    Permissions::from(permissions)
   }
 
   fn len(&self) -> u64 {
