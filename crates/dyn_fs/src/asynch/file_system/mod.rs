@@ -203,6 +203,11 @@ pub trait AsyncMetadata {
   fn modified(&self) -> io::Result<SystemTime>;
   fn permissions(&self) -> Permissions;
   fn len(&self) -> u64;
+
+  /// Returns `true` if the file is empty (`len` is `0`).
+  fn is_empty(&self) -> bool {
+    self.len() == 0
+  }
 }
 
 pub trait AsyncFileType {
