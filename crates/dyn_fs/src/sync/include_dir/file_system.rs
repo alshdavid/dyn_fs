@@ -29,38 +29,28 @@ use crate::file_system::ReadDir;
 /// (create/remove/rename/write/symlink/...) returns
 /// [`io::ErrorKind::Unsupported`].
 ///
-/// The paths exposed by this file system are the paths recorded by
-/// [`include_dir!`](::include_dir::include_dir), which are relative to the
-/// directory passed to the macro. A mount point may be supplied with
-/// [`IncludeDirFileSystem::with_mount`] to place the embedded tree under a
-/// prefix.
+/// Paths are resolved relative to the embedded root directory. Because
+/// `include_dir` records entry paths relative to the directory passed to
+/// [`include_dir!`](::include_dir::include_dir), the root's own path is stripped
+/// so that wrapping a sub-directory exposes its contents at the file system
+/// root.
 #[derive(Debug, Clone)]
 pub struct IncludeDirFileSystem {
   root: Dir<'static>,
-  mount: PathBuf,
+  prefix: PathBuf,
 }
 
 impl IncludeDirFileSystem {
   /// Creates a file system for the given embedded directory.
   ///
-  /// Paths are resolved relative to the directory passed to
-  /// [`include_dir!`](::include_dir::include_dir).
+  /// Paths are resolved relative to `root`. Because `include_dir` records the
+  /// paths of entries relative to the directory passed to
+  /// [`include_dir!`](::include_dir::include_dir), passing a sub-directory
+  /// (for example `ASSETS.get_dir("assets").unwrap().clone()`) exposes that
+  /// sub-directory's contents at the file system root.
   pub fn new(root: Dir<'static>) -> Self {
-    Self {
-      root,
-      mount: PathBuf::new(),
-    }
-  }
-
-  /// Creates a file system that exposes the embedded directory under `mount`.
-  pub fn with_mount(
-    root: Dir<'static>,
-    mount: impl Into<PathBuf>,
-  ) -> Self {
-    Self {
-      root,
-      mount: mount.into(),
-    }
+    let prefix = root.path().to_path_buf();
+    Self { root, prefix }
   }
 
   /// Returns the embedded root directory.
@@ -68,25 +58,14 @@ impl IncludeDirFileSystem {
     &self.root
   }
 
-  /// Returns the mount point the embedded directory is exposed under.
-  pub fn mount(&self) -> &Path {
-    &self.mount
-  }
-
-  /// Maps an exposed path to a path relative to the embedded root.
-  fn relative(
+  /// Removes redundant components (`/`, `.`) from an exposed path.
+  fn normalize(
     &self,
     path: &Path,
   ) -> PathBuf {
-    let stripped = if self.mount.as_os_str().is_empty() {
-      path
-    } else {
-      path.strip_prefix(&self.mount).unwrap_or(path)
-    };
-
     let mut relative = PathBuf::new();
 
-    for component in stripped.components() {
+    for component in path.components() {
       match component {
         Component::RootDir | Component::CurDir | Component::Prefix(_) => {}
         component => relative.push(component),
@@ -96,16 +75,21 @@ impl IncludeDirFileSystem {
     relative
   }
 
-  /// Maps a path relative to the embedded root back to an exposed path.
-  fn absolute(
+  /// Maps an exposed path to the lookup key used against the embedded tree (a
+  /// path relative to the original `include_dir!` root).
+  fn key(
     &self,
     path: &Path,
   ) -> PathBuf {
-    if self.mount.as_os_str().is_empty() {
-      path.to_path_buf()
-    } else {
-      self.mount.join(path)
-    }
+    self.prefix.join(self.normalize(path))
+  }
+
+  /// Maps a lookup key back to an exposed path.
+  fn expose(
+    &self,
+    key: &Path,
+  ) -> PathBuf {
+    key.strip_prefix(&self.prefix).unwrap_or(key).to_path_buf()
   }
 
   /// Produces metadata for an embedded entry.
@@ -125,56 +109,56 @@ impl IncludeDirFileSystem {
     }
   }
 
-  /// Resolves a directory to its list of embedded entries.
+  /// Resolves a lookup key to its directory entries.
   fn resolve_dir(
     &self,
-    relative: &Path,
+    key: &Path,
   ) -> io::Result<&'static [EmbeddedDirEntry<'static>]> {
-    if relative.as_os_str().is_empty() {
+    if key == self.prefix {
       return Ok(self.root.entries());
     }
 
-    if let Some(dir) = self.root.get_dir(relative) {
+    if let Some(dir) = self.root.get_dir(key) {
       return Ok(dir.entries());
     }
 
-    if self.root.get_file(relative).is_some() {
+    if self.root.get_file(key).is_some() {
       return Err(not_a_directory());
     }
 
     Err(not_found())
   }
 
-  /// Resolves a file to its embedded representation.
+  /// Resolves a lookup key to its embedded file.
   fn resolve_file(
     &self,
-    relative: &Path,
+    key: &Path,
   ) -> io::Result<Option<&'static EmbeddedFile<'static>>> {
-    if relative.as_os_str().is_empty() {
+    if key == self.prefix {
       return Err(is_a_directory());
     }
 
-    if let Some(file) = self.root.get_file(relative) {
+    if let Some(file) = self.root.get_file(key) {
       return Ok(Some(file));
     }
 
-    if self.root.get_dir(relative).is_some() {
+    if self.root.get_dir(key).is_some() {
       return Err(is_a_directory());
     }
 
     Err(not_found())
   }
 
-  /// Resolves any path to its embedded entry.
+  /// Resolves a lookup key to its embedded entry.
   fn resolve_entry(
     &self,
-    relative: &Path,
+    key: &Path,
   ) -> io::Result<Option<&'static EmbeddedDirEntry<'static>>> {
-    if relative.as_os_str().is_empty() {
+    if key == self.prefix {
       return Ok(None);
     }
 
-    match self.root.get_entry(relative) {
+    match self.root.get_entry(key) {
       Some(entry) => Ok(Some(entry)),
       None => Err(not_found()),
     }
@@ -215,9 +199,9 @@ impl FileSystem for IncludeDirFileSystem {
       return Err(unsupported("writing"));
     }
 
-    let relative = self.relative(path);
+    let key = self.key(path);
 
-    match self.resolve_file(&relative)? {
+    match self.resolve_file(&key)? {
       Some(file) => Ok(Box::new(IncludeDirFile {
         cursor: Cursor::new(file.contents()),
       })),
@@ -229,9 +213,9 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<PathBuf> {
-    let relative = self.relative(path);
-    self.resolve_entry(&relative)?;
-    Ok(self.absolute(&relative))
+    let key = self.key(path);
+    self.resolve_entry(&key)?;
+    Ok(self.expose(&key))
   }
 
   fn read_link(
@@ -283,9 +267,9 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<Box<dyn Metadata + Send + Sync>> {
-    let relative = self.relative(path);
+    let key = self.key(path);
 
-    match self.resolve_entry(&relative)? {
+    match self.resolve_entry(&key)? {
       Some(entry) => Ok(Box::new(self.entry_metadata(entry))),
       None => Ok(Box::new(IncludeDirMetadata {
         file_type: IncludeDirFileType::directory(),
@@ -298,9 +282,9 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<Vec<u8>> {
-    let relative = self.relative(path);
+    let key = self.key(path);
 
-    match self.resolve_file(&relative)? {
+    match self.resolve_file(&key)? {
       Some(file) => Ok(file.contents().to_vec()),
       None => Err(not_found()),
     }
@@ -310,13 +294,13 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<Box<dyn ReadDir + Send + Sync>> {
-    let relative = self.relative(path);
-    let entries = self.resolve_dir(&relative)?;
+    let key = self.key(path);
+    let entries = self.resolve_dir(&key)?;
 
     let entries: Vec<IncludeDirDirEntry> = entries
       .iter()
       .map(|entry| IncludeDirDirEntry {
-        path: self.absolute(entry.path()),
+        path: self.expose(entry.path()),
         metadata: self.entry_metadata(entry),
       })
       .collect();
@@ -397,13 +381,13 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<bool> {
-    let relative = self.relative(path);
+    let relative = self.normalize(path);
 
     if relative.as_os_str().is_empty() {
       return Ok(true);
     }
 
-    Ok(self.root.contains(relative))
+    Ok(self.root.contains(self.prefix.join(&relative)))
   }
 
   fn write(
