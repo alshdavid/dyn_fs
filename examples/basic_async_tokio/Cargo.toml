@@ -1,0 +1,12 @@
+[package]
+name = "basic_async_tokio"
+version = "0.0.1"
+edition = "2024"
+
+[[bin]]
+name = "basic_async_tokio"
+path = "./main.rs"
+
+[dependencies]
+dyn_fs = { path = "../../crates/dyn_fs" }
+tokio = { version = "1", features = ["full"] }

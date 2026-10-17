@@ -1,0 +1,12 @@
+[package]
+name = "basic_async_memory"
+version = "0.0.1"
+edition = "2024"
+
+[[bin]]
+name = "basic_async_memory"
+path = "./main.rs"
+
+[dependencies]
+dyn_fs = { path = "../../crates/dyn_fs", features = ["async", "memory"] }
+tokio = { version = "1", features = ["full"] }

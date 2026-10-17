@@ -33,3 +33,17 @@ fn main() {
   read_file(&mem_fs);
 }
 ```
+
+## Examples
+
+One example crate per backend lives under `examples/`. Run any of them with
+`cargo run -p <name>`:
+
+| Example | Backend |
+| --- | --- |
+| `basic_sync` | `OsFileSystem` (synchronous, real OS) |
+| `basic_sync_memory` | `MemoryFileSystem` (synchronous, in-memory) |
+| `basic_sync_include_dir` | `IncludeDirFileSystem` (synchronous, read-only, embedded assets) |
+| `basic_async_tokio` | `TokioFileSystem` (asynchronous, real OS) |
+| `basic_async_memory` | `AsyncMemoryFileSystem` (asynchronous, in-memory) |
+| `basic_async_include_dir` | `AsyncIncludeDirFileSystem` (asynchronous, read-only, embedded assets) |

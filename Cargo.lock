@@ -3,10 +3,43 @@
 version = 4
 
 [[package]]
+name = "basic_async_include_dir"
+version = "0.0.1"
+dependencies = [
+ "dyn_fs",
+ "include_dir",
+ "tokio",
+]
+
+[[package]]
+name = "basic_async_memory"
+version = "0.0.1"
+dependencies = [
+ "dyn_fs",
+ "tokio",
+]
+
+[[package]]
+name = "basic_async_tokio"
+version = "0.0.1"
+dependencies = [
+ "dyn_fs",
+ "tokio",
+]
+
+[[package]]
 name = "basic_sync"
 version = "0.0.1"
 dependencies = [
  "dyn_fs",
+]
+
+[[package]]
+name = "basic_sync_include_dir"
+version = "0.0.1"
+dependencies = [
+ "dyn_fs",
+ "include_dir",
 ]
 
 [[package]]

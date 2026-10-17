@@ -5,6 +5,10 @@ members = [
   "./crates/*",
   "./examples/basic_sync",
   "./examples/basic_sync_memory",
+  "./examples/basic_sync_include_dir",
+  "./examples/basic_async_tokio",
+  "./examples/basic_async_memory",
+  "./examples/basic_async_include_dir",
 ]
 
 [profile.release]
