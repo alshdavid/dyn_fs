@@ -24,7 +24,7 @@ jobs:
       - id: generate
         run: |
           set -ex
-          LAST_VERSION=$(curl -sSL https://api.github.com/repos/alshdavid/uhttp/releases/latest | jq -r ".tag_name" | cut -d "." -f 2)
+          LAST_VERSION=$(curl -sSL https://api.github.com/repos/alshdavid/dyn_fs/releases/latest | jq -r ".tag_name" | cut -d "." -f 2)
           if [ "$LAST_VERSION" = "" ]; then
             # Commenting out to protect against overriding on error
             # LAST_VERSION="0"
@@ -133,5 +133,5 @@ jobs:
           VERSION: ${{needs.version.outputs.VERSION}}
         run: |
           set -e
-          sed "s/0.0.0-local/${VERSION}/g" "crates/uhttp/Cargo.toml" > "crates/uhttp/Cargo.toml.new" && mv "crates/uhttp/Cargo.toml.new" "crates/uhttp/Cargo.toml"
-          cargo publish --allow-dirty -p uhttp
+          sed "s/0.0.0-local/${VERSION}/g" "crates/dyn_fs/Cargo.toml" > "crates/dyn_fs/Cargo.toml.new" && mv "crates/dyn_fs/Cargo.toml.new" "crates/dyn_fs/Cargo.toml"
+          cargo publish --allow-dirty -p dyn_fs

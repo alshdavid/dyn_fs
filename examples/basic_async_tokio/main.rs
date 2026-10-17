@@ -29,7 +29,7 @@ async fn main() -> io::Result<()> {
   // Work inside a scratch directory under the system temp dir so we do not
   // touch the user's files.
   let root = std::env::temp_dir().join("dyn_fs_basic_async_tokio");
-  let fs = TokioFileSystem::default();
+  let fs = TokioFileSystem;
 
   let _ = fs.remove_dir_all(&root).await;
 
