@@ -79,10 +79,33 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo check
 
+  publish_crates_io:
+    name: "🔁 Publish: Crate"
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - test
+      - format
+      - lint
+      - check
+    steps:
+      - uses: actions/checkout@v7
+      - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - uses: Swatinem/rust-cache@v2
+      - env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{needs.version.outputs.VERSION}}
+        run: |
+          set -e
+          sed "s/0.0.0-local/${VERSION}/g" "crates/dyn_fs/Cargo.toml" > "crates/dyn_fs/Cargo.toml.new" && mv "crates/dyn_fs/Cargo.toml.new" "crates/dyn_fs/Cargo.toml"
+          cargo publish --allow-dirty -p dyn_fs
+
+
   publish_github_release:
     name: "🔄 Publish Github Release"
     runs-on: ubuntu-24.04
     needs:
+      - publish_crates_io
       - version
       - test
       - format
@@ -117,24 +140,3 @@ jobs:
           curl -fsS -X POST "${{ secrets.SENTINEL_CHANGELOG_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d "$payload" || true
-
-  publish_crates_io:
-    name: "🔁 Publish: Crate"
-    runs-on: ubuntu-latest
-    needs:
-      - version
-      - test
-      - format
-      - lint
-      - check
-    steps:
-      - uses: actions/checkout@v7
-      - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - uses: Swatinem/rust-cache@v2
-      - env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          VERSION: ${{needs.version.outputs.VERSION}}
-        run: |
-          set -e
-          sed "s/0.0.0-local/${VERSION}/g" "crates/dyn_fs/Cargo.toml" > "crates/dyn_fs/Cargo.toml.new" && mv "crates/dyn_fs/Cargo.toml.new" "crates/dyn_fs/Cargo.toml"
-          cargo publish --allow-dirty -p dyn_fs
