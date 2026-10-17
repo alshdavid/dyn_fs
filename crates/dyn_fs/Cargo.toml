@@ -18,5 +18,6 @@ memory = ["dep:normalize-path"]
 async = []
 
 [dependencies]
+include_dir = "0.7.4"
 normalize-path = { version = "^0.2", optional = true }
 tokio = { version = "1.53.3", features = ["full"] }
