@@ -19,3 +19,4 @@ async = []
 
 [dependencies]
 normalize-path = { version = "^0.2", optional = true }
+tokio = { version = "1.53.3", features = ["full"] }
