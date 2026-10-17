@@ -5,8 +5,8 @@
 //! traits it exposes ([`AsyncMetadata`], [`AsyncFileType`], [`AsyncDirEntry`],
 //! [`AsyncReadDir`], [`AsyncFile`]).
 //!
-//! Every fallible operation returns a [`BoxFuture`], and file handles speak the
-//! same asynchronous read / write / seek shapes as `tokio`, so the trait can be
+//! Every fallible operation returns a [`BoxFuture`], and file handles implement
+//! `tokio`'s [`AsyncRead`]/[`AsyncWrite`]/[`AsyncSeek`], so the trait can be
 //! backed by both the operating system and an in-memory implementation and be
 //! driven from any executor.
 
@@ -16,9 +16,11 @@ use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
 use std::time::SystemTime;
+
+pub use tokio::io::AsyncRead;
+pub use tokio::io::AsyncSeek;
+pub use tokio::io::AsyncWrite;
 
 /// A boxed, `Send` future — the return type of the fallible methods on
 /// [`AsyncFileSystem`] and [`AsyncFile`].
@@ -28,48 +30,6 @@ use std::time::SystemTime;
 /// slice arguments are borrowed for the lifetime of the future, so a backend
 /// that can complete without spawning avoids any defensive copying.
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
-
-/// Asynchronous counterpart to [`std::io::Read`].
-///
-/// Deliberately shaped like `tokio::io::AsyncRead` so a `tokio`-backed
-/// implementation can satisfy it by forwarding to `poll_read`.
-pub trait AsyncRead {
-  fn poll_read(
-    self: Pin<&mut Self>,
-    cx: &mut Context<'_>,
-    buf: &mut [u8],
-  ) -> Poll<io::Result<usize>>;
-}
-
-/// Asynchronous counterpart to [`std::io::Write`], shaped like
-/// `tokio::io::AsyncWrite`.
-pub trait AsyncWrite {
-  fn poll_write(
-    self: Pin<&mut Self>,
-    cx: &mut Context<'_>,
-    buf: &[u8],
-  ) -> Poll<io::Result<usize>>;
-
-  fn poll_flush(
-    self: Pin<&mut Self>,
-    cx: &mut Context<'_>,
-  ) -> Poll<io::Result<()>>;
-
-  fn poll_shutdown(
-    self: Pin<&mut Self>,
-    cx: &mut Context<'_>,
-  ) -> Poll<io::Result<()>>;
-}
-
-/// Asynchronous counterpart to [`std::io::Seek`], shaped like
-/// `tokio::io::AsyncSeek`.
-pub trait AsyncSeek {
-  fn poll_seek(
-    self: Pin<&mut Self>,
-    cx: &mut Context<'_>,
-    position: io::SeekFrom,
-  ) -> Poll<io::Result<u64>>;
-}
 
 /// A dynamically-dispatched, asynchronous virtual file system.
 ///
@@ -563,10 +523,10 @@ pub trait AsyncReadDir: Send {
 
 /// An asynchronous, seekable file handle.
 ///
-/// Its supertraits mirror `tokio::io::{AsyncRead, AsyncWrite, AsyncSeek}`, so a
-/// handle can be driven by any executor and adapted to `tokio`'s combinators.
-/// The trait stays object-safe, so handles are handed out as
-/// `Box<dyn AsyncFile>`.
+/// Its read / write / seek supertraits are `tokio`'s own [`AsyncRead`] /
+/// [`AsyncWrite`] / [`AsyncSeek`] (re-exported here), so a handle plugs
+/// directly into `tokio`'s combinators. The trait stays object-safe, so handles
+/// are handed out as `Box<dyn AsyncFile>`.
 pub trait AsyncFile: AsyncRead + AsyncWrite + AsyncSeek + Send + Sync + Unpin {
   /// Queries metadata about the underlying file.
   fn metadata(&self) -> BoxFuture<'_, io::Result<Box<dyn AsyncMetadata + Send + Sync>>>;
