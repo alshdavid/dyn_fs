@@ -30,7 +30,6 @@ unimplemented = "deny"
 implicit_clone = "deny"
 clone_on_ref_ptr = "deny"
 rest_pat_in_fully_bound_structs = "deny"
-wildcard_imports = "warn"
 missing_errors_doc = "allow"
 
 [profile.release]
