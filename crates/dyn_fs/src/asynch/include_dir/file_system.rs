@@ -70,10 +70,7 @@ impl AsyncIncludeDirFileSystem {
   }
 
   /// Removes redundant components (`/`, `.`) from an exposed path.
-  fn normalize(
-    &self,
-    path: &Path,
-  ) -> PathBuf {
+  fn normalize(path: &Path) -> PathBuf {
     let mut relative = PathBuf::new();
 
     for component in path.components() {
@@ -92,7 +89,7 @@ impl AsyncIncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> PathBuf {
-    self.prefix.join(self.normalize(path))
+    self.prefix.join(Self::normalize(path))
   }
 
   /// Maps a lookup key back to an exposed path.
@@ -104,10 +101,7 @@ impl AsyncIncludeDirFileSystem {
   }
 
   /// Produces metadata for an embedded entry.
-  fn entry_metadata(
-    &self,
-    entry: &EmbeddedDirEntry<'static>,
-  ) -> AsyncIncludeDirMetadata {
+  fn entry_metadata(entry: &EmbeddedDirEntry<'static>) -> AsyncIncludeDirMetadata {
     match entry {
       EmbeddedDirEntry::Dir(_) => AsyncIncludeDirMetadata {
         file_type: AsyncIncludeDirFileType::directory(),
@@ -287,7 +281,7 @@ impl AsyncFileSystem for AsyncIncludeDirFileSystem {
 
       match self.resolve_entry(&key)? {
         Some(entry) => {
-          Ok(Box::new(self.entry_metadata(entry)) as Box<dyn AsyncMetadata + Send + Sync>)
+          Ok(Box::new(Self::entry_metadata(entry)) as Box<dyn AsyncMetadata + Send + Sync>)
         }
         None => Ok(Box::new(AsyncIncludeDirMetadata {
           file_type: AsyncIncludeDirFileType::directory(),
@@ -324,7 +318,7 @@ impl AsyncFileSystem for AsyncIncludeDirFileSystem {
         .map(|entry| {
           Box::new(AsyncIncludeDirDirEntry {
             path: self.expose(entry.path()),
-            metadata: self.entry_metadata(entry),
+            metadata: Self::entry_metadata(entry),
           }) as Box<dyn AsyncDirEntry + Send + Sync>
         })
         .collect();
@@ -415,7 +409,7 @@ impl AsyncFileSystem for AsyncIncludeDirFileSystem {
     path: &'a Path,
   ) -> BoxFuture<'a, io::Result<bool>> {
     Box::pin(async move {
-      let relative = self.normalize(path);
+      let relative = Self::normalize(path);
 
       if relative.as_os_str().is_empty() {
         return Ok(true);

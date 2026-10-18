@@ -319,10 +319,7 @@ impl FileSystem for MemoryFileSystem {
     let mut nodes = self.files_write()?;
     let resolved = resolve(&nodes, &path)?;
 
-    if nodes
-      .get(&resolved)
-      .is_some_and(super::node::Node::is_dir)
-    {
+    if nodes.get(&resolved).is_some_and(super::node::Node::is_dir) {
       return Err(is_a_directory());
     }
 

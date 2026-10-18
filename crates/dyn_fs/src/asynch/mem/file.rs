@@ -71,6 +71,7 @@ impl AsyncMemoryFile {
 }
 
 impl AsyncRead for AsyncMemoryFile {
+  #[allow(clippy::cast_possible_truncation)]
   fn poll_read(
     self: Pin<&mut Self>,
     _cx: &mut Context<'_>,
@@ -82,9 +83,8 @@ impl AsyncRead for AsyncMemoryFile {
       Ok(data) => data,
       Err(error) => return Poll::Ready(Err(error)),
     };
-    let data = match data.read() {
-      Ok(data) => data,
-      Err(_) => return Poll::Ready(Err(Self::poisoned())),
+    let Ok(data) = data.read() else {
+      return Poll::Ready(Err(Self::poisoned()));
     };
 
     let start = this.position as usize;
@@ -99,6 +99,7 @@ impl AsyncRead for AsyncMemoryFile {
 }
 
 impl AsyncWrite for AsyncMemoryFile {
+  #[allow(clippy::cast_possible_truncation)]
   fn poll_write(
     self: Pin<&mut Self>,
     _cx: &mut Context<'_>,
@@ -112,9 +113,8 @@ impl AsyncWrite for AsyncMemoryFile {
     };
 
     {
-      let mut data = match data.write() {
-        Ok(data) => data,
-        Err(_) => return Poll::Ready(Err(Self::poisoned())),
+      let Ok(mut data) = data.write() else {
+        return Poll::Ready(Err(Self::poisoned()));
       };
 
       if this.append {
@@ -158,6 +158,7 @@ impl AsyncWrite for AsyncMemoryFile {
 }
 
 impl AsyncSeek for AsyncMemoryFile {
+  #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
   fn start_seek(
     self: Pin<&mut Self>,
     position: SeekFrom,
@@ -204,6 +205,7 @@ impl AsyncFile for AsyncMemoryFile {
     })
   }
 
+  #[allow(clippy::cast_possible_truncation)]
   fn set_len(
     &self,
     size: u64,

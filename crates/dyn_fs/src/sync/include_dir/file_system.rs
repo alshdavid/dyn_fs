@@ -64,10 +64,7 @@ impl IncludeDirFileSystem {
   }
 
   /// Removes redundant components (`/`, `.`) from an exposed path.
-  fn normalize(
-    &self,
-    path: &Path,
-  ) -> PathBuf {
+  fn normalize(path: &Path) -> PathBuf {
     let mut relative = PathBuf::new();
 
     for component in path.components() {
@@ -86,7 +83,7 @@ impl IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> PathBuf {
-    self.prefix.join(self.normalize(path))
+    self.prefix.join(Self::normalize(path))
   }
 
   /// Maps a lookup key back to an exposed path.
@@ -98,10 +95,7 @@ impl IncludeDirFileSystem {
   }
 
   /// Produces metadata for an embedded entry.
-  fn entry_metadata(
-    &self,
-    entry: &EmbeddedDirEntry<'static>,
-  ) -> IncludeDirMetadata {
+  fn entry_metadata(entry: &EmbeddedDirEntry<'static>) -> IncludeDirMetadata {
     match entry {
       EmbeddedDirEntry::Dir(_) => IncludeDirMetadata {
         file_type: IncludeDirFileType::directory(),
@@ -275,7 +269,7 @@ impl FileSystem for IncludeDirFileSystem {
     let key = self.key(path);
 
     match self.resolve_entry(&key)? {
-      Some(entry) => Ok(Box::new(self.entry_metadata(entry))),
+      Some(entry) => Ok(Box::new(Self::entry_metadata(entry))),
       None => Ok(Box::new(IncludeDirMetadata {
         file_type: IncludeDirFileType::directory(),
         len: 0,
@@ -306,7 +300,7 @@ impl FileSystem for IncludeDirFileSystem {
       .iter()
       .map(|entry| IncludeDirDirEntry {
         path: self.expose(entry.path()),
-        metadata: self.entry_metadata(entry),
+        metadata: Self::entry_metadata(entry),
       })
       .collect();
 
@@ -386,7 +380,7 @@ impl FileSystem for IncludeDirFileSystem {
     &self,
     path: &Path,
   ) -> io::Result<bool> {
-    let relative = self.normalize(path);
+    let relative = Self::normalize(path);
 
     if relative.as_os_str().is_empty() {
       return Ok(true);

@@ -6,6 +6,8 @@ authors = ["alshdavid"]
 repository = "https://github.com/alshdavid/dyn-fs"
 description = "Abstraction for the std::fs stdlib"
 license = "MIT"
+keywords = ["fs", "filesystem", "async", "abstraction"]
+categories = ["filesystem"]
 
 [lints]
 workspace = true

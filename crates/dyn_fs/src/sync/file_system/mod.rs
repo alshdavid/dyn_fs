@@ -315,6 +315,7 @@ impl FileTimes {
 ///
 /// Mirrors [`std::fs::OpenOptions`] without leaking the standard library type
 /// into the abstraction.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct OpenOptions {
   read: bool,

@@ -56,6 +56,7 @@ impl MemoryFile {
 }
 
 impl Read for MemoryFile {
+  #[allow(clippy::cast_possible_truncation)]
   fn read(
     &mut self,
     buf: &mut [u8],
@@ -79,6 +80,7 @@ impl Read for MemoryFile {
 }
 
 impl Write for MemoryFile {
+  #[allow(clippy::cast_possible_truncation)]
   fn write(
     &mut self,
     buf: &[u8],
@@ -116,6 +118,7 @@ impl Write for MemoryFile {
 }
 
 impl Seek for MemoryFile {
+  #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
   fn seek(
     &mut self,
     position: SeekFrom,
@@ -154,6 +157,7 @@ impl File for MemoryFile {
     Ok(Box::new(node.metadata()))
   }
 
+  #[allow(clippy::cast_possible_truncation)]
   fn set_len(
     &self,
     size: u64,

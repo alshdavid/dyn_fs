@@ -34,6 +34,7 @@ fn read_only() -> io::Error {
 }
 
 impl AsyncRead for AsyncIncludeDirFile {
+  #[allow(clippy::cast_possible_truncation)]
   fn poll_read(
     self: Pin<&mut Self>,
     _cx: &mut Context<'_>,
