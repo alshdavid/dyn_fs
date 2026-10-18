@@ -23,10 +23,10 @@ pub use ::tokio::io::AsyncRead;
 pub use ::tokio::io::AsyncSeek;
 pub use ::tokio::io::AsyncWrite;
 
-pub use crate::sync::file_system::DirBuilder;
-pub use crate::sync::file_system::FileTimes;
-pub use crate::sync::file_system::OpenOptions;
-pub use crate::sync::file_system::Permissions;
+pub use crate::sync::DirBuilder;
+pub use crate::sync::FileTimes;
+pub use crate::sync::OpenOptions;
+pub use crate::sync::Permissions;
 
 /// A boxed, `Send` future — the return type of the fallible methods on
 /// [`AsyncFileSystem`] and [`AsyncFile`].

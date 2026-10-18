@@ -2,9 +2,9 @@ use std::fs;
 use std::time::SystemTime;
 
 use super::OsFileType;
-use crate::file_system::FileType;
-use crate::file_system::Metadata;
-use crate::file_system::Permissions;
+use crate::FileType;
+use crate::Metadata;
+use crate::Permissions;
 
 pub struct OsMetadata(fs::Metadata);
 

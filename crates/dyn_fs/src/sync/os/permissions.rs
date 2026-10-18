@@ -2,7 +2,7 @@ use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-use crate::file_system::Permissions;
+use crate::Permissions;
 
 impl From<fs::Permissions> for Permissions {
   fn from(value: fs::Permissions) -> Self {

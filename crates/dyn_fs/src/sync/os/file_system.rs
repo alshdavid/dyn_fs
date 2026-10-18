@@ -10,14 +10,14 @@ use std::sync::Arc;
 
 use super::OsMetadata;
 use super::OsReadDir;
-use crate::file_system::DirBuilder;
-use crate::file_system::File;
-use crate::file_system::FileSystem;
-use crate::file_system::FileTimes;
-use crate::file_system::Metadata;
-use crate::file_system::OpenOptions;
-use crate::file_system::Permissions;
-use crate::file_system::ReadDir;
+use crate::DirBuilder;
+use crate::File;
+use crate::FileSystem;
+use crate::FileTimes;
+use crate::Metadata;
+use crate::OpenOptions;
+use crate::Permissions;
+use crate::ReadDir;
 
 #[derive(Default, Debug, Clone)]
 pub struct OsFileSystem;
@@ -26,6 +26,7 @@ impl OsFileSystem {
   /// Creates a file system backed by the real operating system, returned as a
   /// shared [`Arc`] trait object.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new() -> Arc<dyn FileSystem> {
     Arc::new(Self)
   }

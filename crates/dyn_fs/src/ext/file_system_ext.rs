@@ -25,7 +25,7 @@ impl<F: FileSystem + ?Sized> FileSystemExt for F {
       let possible = current.join(file_name);
 
       if self.try_exists(&possible)? {
-        found.push(possible)
+        found.push(possible);
       }
 
       let Some(next) = current.parent() else {

@@ -2,9 +2,9 @@ use std::io;
 use std::time::SystemTime;
 
 use super::IncludeDirFileType;
-use crate::file_system::FileType;
-use crate::file_system::Metadata;
-use crate::file_system::Permissions;
+use crate::FileType;
+use crate::Metadata;
+use crate::Permissions;
 
 /// Metadata for an embedded `include_dir` entry.
 ///

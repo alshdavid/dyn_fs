@@ -40,18 +40,19 @@ impl AsyncMemoryFileSystem {
   /// Creates an empty in-memory file system, returned as a shared [`Arc`] trait
   /// object.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new() -> Arc<dyn AsyncFileSystem> {
     Arc::new(Self::default())
   }
 
-  fn files_write<'a>(&'a self) -> io::Result<RwLockWriteGuard<'a, AsyncNodes>> {
+  fn files_write(&self) -> io::Result<RwLockWriteGuard<'_, AsyncNodes>> {
     let Ok(files) = self.files.write() else {
       return Err(io::Error::other("memory file system lock poisoned"));
     };
     Ok(files)
   }
 
-  fn files_read<'a>(&'a self) -> io::Result<RwLockReadGuard<'a, AsyncNodes>> {
+  fn files_read(&self) -> io::Result<RwLockReadGuard<'_, AsyncNodes>> {
     let Ok(files) = self.files.read() else {
       return Err(io::Error::other("memory file system lock poisoned"));
     };
@@ -347,8 +348,7 @@ impl AsyncFileSystem for AsyncMemoryFileSystem {
 
       if nodes
         .get(&resolved)
-        .map(|node| node.is_dir())
-        .unwrap_or(false)
+        .is_some_and(super::node::AsyncNode::is_dir)
       {
         return Err(is_a_directory());
       }
@@ -408,7 +408,7 @@ impl AsyncFileSystem for AsyncMemoryFileSystem {
       let from = resolve(&nodes, &from.normalize())?;
       let to = resolve(&nodes, &to.normalize())?;
 
-      if nodes.get(&from).map(|node| node.is_dir()).unwrap_or(false) {
+      if nodes.get(&from).is_some_and(super::node::AsyncNode::is_dir) {
         return Err(is_a_directory());
       }
 
@@ -638,7 +638,7 @@ impl AsyncFileSystem for AsyncMemoryFileSystem {
       for (entry, node) in moving {
         let suffix = entry
           .strip_prefix(&from)
-          .map(|path| path.to_path_buf())
+          .map(std::path::Path::to_path_buf)
           .unwrap_or_default();
 
         let destination = if suffix.as_os_str().is_empty() {

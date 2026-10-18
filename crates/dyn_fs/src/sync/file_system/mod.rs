@@ -1,7 +1,7 @@
 //! Abstraction of the file system
 //!
 //! This module contains traits that map the functionality of
-//! the Rust standard library FileSystem to trait methods
+//! the Rust standard library `FileSystem` to trait methods
 
 use std::ffi::OsString;
 use std::io;
@@ -188,6 +188,7 @@ pub struct Permissions {
 
 impl Permissions {
   /// Creates a new, writable permission set.
+  #[must_use]
   pub fn new() -> Self {
     Self {
       readonly: false,
@@ -197,6 +198,7 @@ impl Permissions {
   }
 
   /// Creates a permission set from a readonly flag.
+  #[must_use]
   pub fn from_readonly(readonly: bool) -> Self {
     let mut permissions = Self::new();
     permissions.set_readonly(readonly);
@@ -205,6 +207,7 @@ impl Permissions {
 
   /// Creates a permission set from Unix permission bits.
   #[cfg(unix)]
+  #[must_use]
   pub fn from_mode(mode: u32) -> Self {
     Self {
       readonly: mode & 0o222 == 0,
@@ -213,6 +216,7 @@ impl Permissions {
   }
 
   /// Returns `true` if the file is readonly.
+  #[must_use]
   pub fn readonly(&self) -> bool {
     self.readonly
   }
@@ -237,6 +241,7 @@ impl Permissions {
 
   /// Returns the Unix permission bits.
   #[cfg(unix)]
+  #[must_use]
   pub fn mode(&self) -> u32 {
     self.mode
   }
@@ -270,16 +275,19 @@ pub struct FileTimes {
 
 impl FileTimes {
   /// Creates a new `FileTimes` with no timestamps set.
+  #[must_use]
   pub fn new() -> Self {
     Self::default()
   }
 
   /// Returns the accessed timestamp, if set.
+  #[must_use]
   pub fn accessed(&self) -> Option<SystemTime> {
     self.accessed
   }
 
   /// Returns the modified timestamp, if set.
+  #[must_use]
   pub fn modified(&self) -> Option<SystemTime> {
     self.modified
   }
@@ -319,6 +327,7 @@ pub struct OpenOptions {
 
 impl OpenOptions {
   /// Creates a blank new set of options.
+  #[must_use]
   pub fn new() -> Self {
     Self::default()
   }
@@ -378,31 +387,37 @@ impl OpenOptions {
   }
 
   /// Returns whether read access is enabled.
+  #[must_use]
   pub fn get_read(&self) -> bool {
     self.read
   }
 
   /// Returns whether write access is enabled.
+  #[must_use]
   pub fn get_write(&self) -> bool {
     self.write
   }
 
   /// Returns whether append mode is enabled.
+  #[must_use]
   pub fn get_append(&self) -> bool {
     self.append
   }
 
   /// Returns whether truncation is enabled.
+  #[must_use]
   pub fn get_truncate(&self) -> bool {
     self.truncate
   }
 
   /// Returns whether creating the file is enabled.
+  #[must_use]
   pub fn get_create(&self) -> bool {
     self.create
   }
 
   /// Returns whether creating a new file is enabled.
+  #[must_use]
   pub fn get_create_new(&self) -> bool {
     self.create_new
   }
@@ -423,6 +438,7 @@ pub struct DirBuilder {
 
 impl DirBuilder {
   /// Creates a new builder with default options.
+  #[must_use]
   pub fn new() -> Self {
     Self::default()
   }
@@ -448,12 +464,14 @@ impl DirBuilder {
   }
 
   /// Returns whether intermediate directories will be created.
+  #[must_use]
   pub fn get_recursive(&self) -> bool {
     self.recursive
   }
 
   /// Returns the Unix permission mode, if one was set.
   #[cfg(unix)]
+  #[must_use]
   pub fn get_mode(&self) -> Option<u32> {
     if self.has_mode { Some(self.mode) } else { None }
   }

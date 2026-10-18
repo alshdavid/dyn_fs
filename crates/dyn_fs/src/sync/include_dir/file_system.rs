@@ -14,14 +14,14 @@ use super::IncludeDirFile;
 use super::IncludeDirFileType;
 use super::IncludeDirMetadata;
 use super::IncludeDirReadDir;
-use crate::file_system::DirBuilder;
-use crate::file_system::File;
-use crate::file_system::FileSystem;
-use crate::file_system::FileTimes;
-use crate::file_system::Metadata;
-use crate::file_system::OpenOptions;
-use crate::file_system::Permissions;
-use crate::file_system::ReadDir;
+use crate::DirBuilder;
+use crate::File;
+use crate::FileSystem;
+use crate::FileTimes;
+use crate::Metadata;
+use crate::OpenOptions;
+use crate::Permissions;
+use crate::ReadDir;
 
 /// A read-only [`FileSystem`] backed by an embedded [`include_dir`] directory.
 ///
@@ -51,12 +51,14 @@ impl IncludeDirFileSystem {
   /// (for example `ASSETS.get_dir("assets").unwrap().clone()`) exposes that
   /// sub-directory's contents at the file system root.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new(root: Dir<'static>) -> Arc<dyn FileSystem> {
     let prefix = root.path().to_path_buf();
     Arc::new(Self { root, prefix })
   }
 
   /// Returns the embedded root directory.
+  #[must_use]
   pub fn root(&self) -> &Dir<'static> {
     &self.root
   }

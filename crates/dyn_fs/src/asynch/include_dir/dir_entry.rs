@@ -23,7 +23,7 @@ impl AsyncDirEntry for AsyncIncludeDirDirEntry {
     self
       .path
       .file_name()
-      .map(|name| name.to_os_string())
+      .map(std::ffi::OsStr::to_os_string)
       .unwrap_or_default()
   }
 

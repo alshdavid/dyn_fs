@@ -2,7 +2,7 @@ use std::fs;
 use std::io;
 
 use super::OsDirEntry;
-use crate::file_system::DirEntry;
+use crate::DirEntry;
 
 pub struct OsReadDir(fs::ReadDir);
 

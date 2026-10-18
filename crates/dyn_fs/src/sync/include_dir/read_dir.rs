@@ -1,7 +1,7 @@
 use std::io;
 
 use super::IncludeDirDirEntry;
-use crate::file_system::DirEntry;
+use crate::DirEntry;
 
 /// An iterator over the entries of an embedded `include_dir` directory.
 pub struct IncludeDirReadDir(std::vec::IntoIter<IncludeDirDirEntry>);

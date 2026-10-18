@@ -2,9 +2,9 @@ use std::io;
 use std::time::SystemTime;
 
 use super::MemoryFileType;
-use crate::file_system::FileType;
-use crate::file_system::Metadata;
-use crate::file_system::Permissions;
+use crate::FileType;
+use crate::Metadata;
+use crate::Permissions;
 
 /// A metadata snapshot of an in-memory file system node.
 #[derive(Debug, Clone)]

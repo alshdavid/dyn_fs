@@ -1,4 +1,4 @@
-use crate::file_system::FileType;
+use crate::FileType;
 
 /// File type of an embedded `include_dir` entry.
 ///

@@ -57,12 +57,14 @@ impl AsyncIncludeDirFileSystem {
   /// (for example `ASSETS.get_dir("assets").unwrap().clone()`) exposes that
   /// sub-directory's contents at the file system root.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new(root: Dir<'static>) -> Arc<dyn AsyncFileSystem> {
     let prefix = root.path().to_path_buf();
     Arc::new(Self { root, prefix })
   }
 
   /// Returns the embedded root directory.
+  #[must_use]
   pub fn root(&self) -> &Dir<'static> {
     &self.root
   }

@@ -3,9 +3,9 @@ use std::io;
 use std::path::PathBuf;
 
 use super::MemoryMetadata;
-use crate::file_system::DirEntry;
-use crate::file_system::FileType;
-use crate::file_system::Metadata;
+use crate::DirEntry;
+use crate::FileType;
+use crate::Metadata;
 
 /// A directory entry of the in-memory file system.
 #[derive(Debug, Clone)]
@@ -23,7 +23,7 @@ impl DirEntry for MemoryDirEntry {
     self
       .path
       .file_name()
-      .map(|name| name.to_os_string())
+      .map(std::ffi::OsStr::to_os_string)
       .unwrap_or_default()
   }
 

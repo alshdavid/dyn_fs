@@ -16,7 +16,7 @@ use std::io;
 use std::path::Path;
 
 use dyn_fs::asynch::AsyncFileSystem;
-use dyn_fs::asynch::include_dir::AsyncIncludeDirFileSystem;
+use dyn_fs::asynch::AsyncIncludeDirFileSystem;
 use tokio::io::AsyncReadExt;
 
 /// The embedded tree, rooted at this crate's `assets/` directory.

@@ -2,6 +2,10 @@
 name = "basic_async_tokio"
 version = "0.0.1"
 edition = "2024"
+publish = false
+
+[lints.clippy]
+cargo_common_metadata = "allow"
 
 [[bin]]
 name = "basic_async_tokio"

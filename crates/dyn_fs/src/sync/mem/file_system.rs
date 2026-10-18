@@ -14,15 +14,15 @@ use super::MemoryMetadata;
 use super::node::Node;
 use super::node::NodeKind;
 use super::node::Nodes;
-use crate::file_system::DirBuilder;
-use crate::file_system::DirEntry;
-use crate::file_system::File;
-use crate::file_system::FileSystem;
-use crate::file_system::FileTimes;
-use crate::file_system::Metadata;
-use crate::file_system::OpenOptions;
-use crate::file_system::Permissions;
-use crate::file_system::ReadDir;
+use crate::DirBuilder;
+use crate::DirEntry;
+use crate::File;
+use crate::FileSystem;
+use crate::FileTimes;
+use crate::Metadata;
+use crate::OpenOptions;
+use crate::Permissions;
+use crate::ReadDir;
 
 /// An in-memory, thread-safe implementation of [`FileSystem`].
 ///
@@ -38,18 +38,19 @@ impl MemoryFileSystem {
   /// Creates an empty in-memory file system, returned as a shared [`Arc`] trait
   /// object.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new() -> Arc<dyn FileSystem> {
     Arc::new(Self::default())
   }
 
-  fn files_write<'a>(&'a self) -> io::Result<RwLockWriteGuard<'a, Nodes>> {
+  fn files_write(&self) -> io::Result<RwLockWriteGuard<'_, Nodes>> {
     let Ok(files) = self.files.write() else {
       return Err(io::Error::other("memory file system lock poisoned"));
     };
     Ok(files)
   }
 
-  fn files_read<'a>(&'a self) -> io::Result<RwLockReadGuard<'a, Nodes>> {
+  fn files_read(&self) -> io::Result<RwLockReadGuard<'_, Nodes>> {
     let Ok(files) = self.files.read() else {
       return Err(io::Error::other("memory file system lock poisoned"));
     };
@@ -320,8 +321,7 @@ impl FileSystem for MemoryFileSystem {
 
     if nodes
       .get(&resolved)
-      .map(|node| node.is_dir())
-      .unwrap_or(false)
+      .is_some_and(super::node::Node::is_dir)
     {
       return Err(is_a_directory());
     }
@@ -375,7 +375,7 @@ impl FileSystem for MemoryFileSystem {
     let from = resolve(&nodes, &from.normalize())?;
     let to = resolve(&nodes, &to.normalize())?;
 
-    if nodes.get(&from).map(|node| node.is_dir()).unwrap_or(false) {
+    if nodes.get(&from).is_some_and(super::node::Node::is_dir) {
       return Err(is_a_directory());
     }
 
@@ -587,7 +587,7 @@ impl FileSystem for MemoryFileSystem {
     for (entry, node) in moving {
       let suffix = entry
         .strip_prefix(&from)
-        .map(|path| path.to_path_buf())
+        .map(std::path::Path::to_path_buf)
         .unwrap_or_default();
 
       let destination = if suffix.as_os_str().is_empty() {

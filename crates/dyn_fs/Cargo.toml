@@ -7,6 +7,9 @@ repository = "https://github.com/alshdavid/dyn-fs"
 description = "Abstraction for the std::fs stdlib"
 license = "MIT"
 
+[lints]
+workspace = true
+
 [lib]
 
 [features]

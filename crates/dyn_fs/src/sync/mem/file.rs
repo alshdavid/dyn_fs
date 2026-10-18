@@ -11,10 +11,10 @@ use std::time::SystemTime;
 
 use super::node::Node;
 use super::node::NodeKind;
-use crate::file_system::File;
-use crate::file_system::FileTimes;
-use crate::file_system::Metadata;
-use crate::file_system::Permissions;
+use crate::File;
+use crate::FileTimes;
+use crate::Metadata;
+use crate::Permissions;
 
 /// A handle onto a file within a [`super::MemoryFileSystem`].
 ///

@@ -7,10 +7,10 @@ use std::io::Write;
 
 use super::IncludeDirFileType;
 use super::IncludeDirMetadata;
-use crate::file_system::File;
-use crate::file_system::FileTimes;
-use crate::file_system::Metadata;
-use crate::file_system::Permissions;
+use crate::File;
+use crate::FileTimes;
+use crate::Metadata;
+use crate::Permissions;
 
 /// A read-only file handle onto an embedded `include_dir` file.
 ///

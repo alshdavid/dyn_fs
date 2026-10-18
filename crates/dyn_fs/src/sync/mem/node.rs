@@ -6,7 +6,7 @@ use std::time::SystemTime;
 
 use super::MemoryFileType;
 use super::MemoryMetadata;
-use crate::file_system::Permissions;
+use crate::Permissions;
 
 /// The in-memory node table, keyed by normalized path.
 pub(crate) type Nodes = HashMap<PathBuf, Node>;
@@ -86,7 +86,7 @@ impl Node {
   /// Returns the size of this node in bytes.
   pub fn len(&self) -> u64 {
     match &self.kind {
-      NodeKind::File(data) => data.read().map(|data| data.len() as u64).unwrap_or(0),
+      NodeKind::File(data) => data.read().map_or(0, |data| data.len() as u64),
       NodeKind::Symlink(target) => target.as_os_str().len() as u64,
       NodeKind::Directory => 0,
     }

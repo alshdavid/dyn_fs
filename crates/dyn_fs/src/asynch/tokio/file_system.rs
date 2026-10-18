@@ -34,6 +34,7 @@ impl TokioFileSystem {
   /// Creates a file system backed by `tokio`'s asynchronous filesystem API,
   /// returned as a shared [`Arc`] trait object.
   #[allow(clippy::new_ret_no_self)]
+  #[must_use]
   pub fn new() -> Arc<dyn AsyncFileSystem> {
     Arc::new(Self)
   }

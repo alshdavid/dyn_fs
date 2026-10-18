@@ -86,7 +86,7 @@ impl AsyncNode {
   /// Returns the size of this node in bytes.
   pub fn len(&self) -> u64 {
     match &self.kind {
-      AsyncNodeKind::File(data) => data.read().map(|data| data.len() as u64).unwrap_or(0),
+      AsyncNodeKind::File(data) => data.read().map_or(0, |data| data.len() as u64),
       AsyncNodeKind::Symlink(target) => target.as_os_str().len() as u64,
       AsyncNodeKind::Directory => 0,
     }

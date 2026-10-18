@@ -5,9 +5,9 @@ use std::path::PathBuf;
 
 use super::OsFileType;
 use super::OsMetadata;
-use crate::file_system::DirEntry;
-use crate::file_system::FileType;
-use crate::file_system::Metadata;
+use crate::DirEntry;
+use crate::FileType;
+use crate::Metadata;
 
 pub struct OsDirEntry(fs::DirEntry);
 

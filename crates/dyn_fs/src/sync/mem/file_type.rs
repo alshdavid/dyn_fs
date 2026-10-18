@@ -1,4 +1,4 @@
-use crate::file_system::FileType;
+use crate::FileType;
 
 /// File type of an in-memory node.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
