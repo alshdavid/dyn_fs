@@ -10,4 +10,4 @@ pub use self::file_system::*;
 pub use self::include_dir::AsyncIncludeDirFileSystem;
 #[cfg(feature = "memory")]
 pub use self::mem::AsyncMemoryFileSystem;
-pub use self::tokio::TokioFileSystem;
+pub use self::tokio::AsyncTokioFileSystem;

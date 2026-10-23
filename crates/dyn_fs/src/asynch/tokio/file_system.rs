@@ -28,9 +28,9 @@ use crate::asynch::file_system::Permissions;
 
 /// An [`AsyncFileSystem`] backed by `tokio`'s asynchronous filesystem API.
 #[derive(Default, Debug, Clone)]
-pub struct TokioFileSystem;
+pub struct AsyncTokioFileSystem;
 
-impl TokioFileSystem {
+impl AsyncTokioFileSystem {
   /// Creates a file system backed by `tokio`'s asynchronous filesystem API,
   /// returned as a shared [`Arc`] trait object.
   #[allow(clippy::new_ret_no_self)]
@@ -40,7 +40,7 @@ impl TokioFileSystem {
   }
 }
 
-impl AsyncFileSystem for TokioFileSystem {
+impl AsyncFileSystem for AsyncTokioFileSystem {
   fn open_with<'a>(
     &'a self,
     path: &'a Path,
