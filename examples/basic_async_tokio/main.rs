@@ -1,4 +1,4 @@
-//! Demonstrates the asynchronous, `tokio`-backed [`TokioFileSystem`].
+//! Demonstrates the asynchronous, `tokio`-backed [`AsyncTokioFileSystem`].
 //!
 //! This backend forwards every operation to `tokio::fs`, so it reflects the real
 //! operating-system file system. Like the other asynchronous backends it is
@@ -19,7 +19,7 @@ use std::path::PathBuf;
 
 use dyn_fs::OpenOptions;
 use dyn_fs::asynch::AsyncFileSystem;
-use dyn_fs::asynch::tokio::TokioFileSystem;
+use dyn_fs::asynch::tokio::AsyncTokioFileSystem;
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncSeekExt;
 use tokio::io::AsyncWriteExt;
@@ -29,7 +29,7 @@ async fn main() -> io::Result<()> {
   // Work inside a scratch directory under the system temp dir so we do not
   // touch the user's files.
   let root = std::env::temp_dir().join("dyn_fs_basic_async_tokio");
-  let fs = TokioFileSystem::new();
+  let fs = AsyncTokioFileSystem::new();
 
   let _ = fs.remove_dir_all(&root).await;
 

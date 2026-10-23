@@ -50,6 +50,6 @@ One example crate per backend lives under `examples/`. Run any of them with
 | `basic_sync` | `OsFileSystem` (synchronous, real OS) |
 | `basic_sync_memory` | `MemoryFileSystem` (synchronous, in-memory) |
 | `basic_sync_include_dir` | `IncludeDirFileSystem` (synchronous, read-only, embedded assets) |
-| `basic_async_tokio` | `TokioFileSystem` (asynchronous, real OS) |
+| `basic_async_tokio` | `AsyncTokioFileSystem` (asynchronous, real OS) |
 | `basic_async_memory` | `AsyncMemoryFileSystem` (asynchronous, in-memory) |
 | `basic_async_include_dir` | `AsyncIncludeDirFileSystem` (asynchronous, read-only, embedded assets) |
